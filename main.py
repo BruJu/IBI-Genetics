@@ -85,49 +85,31 @@ def generate_new_population(old_population):
     # evaluation = [x[SCORE] for x in old_population]
     evaluation = [SIZE_OF_POPULATION - x for x in range(len(old_population))]
 
-    new_population = [old_population[x] for x in range(ELITISM)]
+    # Elite keeping
+    new_population = [old_population[x][WORD] for x in range(ELITISM)]
 
-    z = True
-    for _ in range(SIZE_OF_POPULATION - ELITISM):
-        option = random.random()
+    # Crossover not elite
+    while len(new_population) < SIZE_OF_POPULATION:
+        picked_word_1 = random.choices(old_population, weights=evaluation)[0][WORD]
+        picked_word_2 = random.choices(old_population, weights=evaluation)[0][WORD]
 
-        if z:
-           picked_word = random.choices(old_population[0:len(old_population) // 2], weights=evaluation[0:len(old_population) // 2])[0][WORD]
-        else:
-           picked_word = random.choices(new_population[0:ELITISM])[0][WORD]
+        if picked_word_1 == picked_word_2:
+            continue
 
-        z = not z
+        new_word = combine(picked_word_1, picked_word_2)
+        new_population.append(new_word)
 
-        if option < MUTATION_RATE:
+    # Mutate some new population
+    for i in range(len(new_population)):
+        if random.random() < MUTATION_RATE:
             mutation_func = [
                 mutate_add_letter,
                 mutate_remove_letter,
-                mutate_change_letter, mutate_change_letter,
+                mutate_change_letter, mutate_change_letter, mutate_change_to_near_letter
             ]
+            new_population[i] = random.choice(mutation_func)(new_population[i])
 
-            new_member = random.choice(mutation_func)(picked_word)
-        else:
-            option -= MUTATION_RATE
-            if option < CROSS_OVER_RATE:
-                other_word = None
-
-                count = 0
-                while True:
-                    other_word = random.choices(old_population[0:len(old_population) // 2], weights=evaluation[0:len(old_population) // 2])[0][WORD]
-                    count += 1
-                    if other_word != picked_word:
-                        break
-
-                    if count == 1000:
-                        print(old_population)
-
-                new_member = combine(picked_word, other_word)
-            else:
-                new_member = picked_word
-
-        t = (new_member, check(new_member))
-        if t not in new_population:
-            new_population.append(t)
+        new_population[i] = (new_population[i], check(new_population[i]))
 
     return new_population
 
@@ -155,7 +137,7 @@ if __name__ == '__main__':
     best_score = 0
     while True:
         generation += 1
-        print("-- GENERATION " + str(generation) + " : " + str(population[0]))
+        # print("-- GENERATION " + str(generation) + " : " + str(population[0]))
         # solution, score = evaluate_population(population)
         # print(str(generation) + " : " +  population[0] + " " + str(check((population[0]))))
 
@@ -163,6 +145,7 @@ if __name__ == '__main__':
 
         if best_score < max_score[SCORE]:
             print("New max score at generation " + str(generation) + " : " + str(max_score))
+            print(population[0])
 
             best_score = max_score[SCORE]
 

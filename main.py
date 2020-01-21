@@ -4,14 +4,17 @@ import random
 # =============================================================================
 # ==== META
 
-GROUP_ID = 1
+GROUP_ID = 34
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 MIN_SIZE = 12
 MAX_SIZE = 18
 SIZE_OF_POPULATION = 100
-MUTATION_RATE = 0.08
-CROSS_OVER_RATE = 0.05
-ELITISM = 10
+MUTATION_RATE = 0.20
+CROSS_OVER_RATE = 0.15
+ELITISM = 15
+
+WORD = 0
+SCORE = 1
 
 
 def check(password_attempt):
@@ -77,10 +80,10 @@ def mutate_change_to_near_letter(word):
 # =============================================================================
 # ==== Genetic Search
 
-def generate_new_population(old_population, _):
-    old_population.sort(key=lambda s: -check(s))
-    evaluation = [check(x) for x in old_population]
-    # evaluation = [len(old_population) - x for x in range(len(old_population))]
+def generate_new_population(old_population):
+    old_population.sort(key=lambda s: -s[SCORE])
+    # evaluation = [x[SCORE] for x in old_population]
+    evaluation = [SIZE_OF_POPULATION - x for x in range(len(old_population))]
 
     new_population = [old_population[x] for x in range(ELITISM)]
 
@@ -89,9 +92,9 @@ def generate_new_population(old_population, _):
         option = random.random()
 
         if z:
-           picked_word = random.choices(old_population[0:len(old_population) // 2], weights=evaluation[0:len(old_population) // 2])[0]
+           picked_word = random.choices(old_population[0:len(old_population) // 2], weights=evaluation[0:len(old_population) // 2])[0][WORD]
         else:
-           picked_word = random.choices(new_population[0:ELITISM])[0]
+           picked_word = random.choices(new_population[0:ELITISM])[0][WORD]
 
         z = not z
 
@@ -100,91 +103,68 @@ def generate_new_population(old_population, _):
                 mutate_add_letter,
                 mutate_remove_letter,
                 mutate_change_letter, mutate_change_letter,
-                mutate_change_to_near_letter, mutate_change_to_near_letter, mutate_change_to_near_letter
             ]
-            new_population.append(random.choice(mutation_func)(picked_word))
+
+            new_member = random.choice(mutation_func)(picked_word)
         else:
             option -= MUTATION_RATE
             if option < CROSS_OVER_RATE:
-                other_word = random.choices(old_population[0:len(old_population) // 2], weights=evaluation[0:len(old_population) // 2])[0]
+                other_word = None
 
-                new_population.append(combine(picked_word, other_word))
+                count = 0
+                while True:
+                    other_word = random.choices(old_population[0:len(old_population) // 2], weights=evaluation[0:len(old_population) // 2])[0][WORD]
+                    count += 1
+                    if other_word != picked_word:
+                        break
+
+                    if count == 1000:
+                        print(old_population)
+
+                new_member = combine(picked_word, other_word)
             else:
-                new_population.append(picked_word)
+                new_member = picked_word
+
+        t = (new_member, check(new_member))
+        if t not in new_population:
+            new_population.append(t)
 
     return new_population
 
-def generate_new_population_random_weights(old_population, evaluation):
-    new_population = []
-
-    for _ in range(SIZE_OF_POPULATION):
-        option = random.random()
-
-        picked_word = random.choices(old_population, weights=evaluation)[0]
-
-        if option < MUTATION_RATE:
-            mutation_func = [
-                mutate_add_letter,
-                mutate_remove_letter,
-                mutate_change_letter, mutate_change_letter, mutate_change_letter,
-                mutate_change_to_near_letter, mutate_change_to_near_letter
-            ]
-            new_population.append(random.choice(mutation_func)(picked_word))
-        else:
-            option -= MUTATION_RATE
-            if option < CROSS_OVER_RATE:
-                other_word = random.choices(old_population, weights=evaluation)[0]
-
-                new_population.append(combine(picked_word, other_word))
-            else:
-                new_population.append(picked_word)
-
-    return new_population
 
 
 def generate_first_population():
-    return [generate() for _ in range(SIZE_OF_POPULATION)]
+    first_population = []
 
+    for _ in range(SIZE_OF_POPULATION):
+        individual = generate()
+        first_population.append((individual, check(individual)))
 
-def evaluate_population(population):
-    score = []
-    solution = None
-
-    for individual in population:
-        current_score = check(individual)
-        score.append(current_score)
-        if current_score == 1:
-            solution = individual
-
-    return solution, score
-
+    return first_population
 
 
 # =============================================================================
 # ==== Main
 
 
+
 if __name__ == '__main__':
     population = generate_first_population()
-
 
     generation = 0
     best_score = 0
     while True:
         generation += 1
-        solution, score = evaluate_population(population)
+        print("-- GENERATION " + str(generation) + " : " + str(population[0]))
+        # solution, score = evaluate_population(population)
+        # print(str(generation) + " : " +  population[0] + " " + str(check((population[0]))))
 
-        if solution is not None:
-            print(solution)
-            break
+        max_score = max(population, key=lambda x: x[SCORE])
 
-        max_score = max(score)
-
-
-        if best_score < max_score:
+        if best_score < max_score[SCORE]:
             print("New max score at generation " + str(generation) + " : " + str(max_score))
 
-            best_score = max_score
+            best_score = max_score[SCORE]
 
-        population = generate_new_population(population, score)
+        population = generate_new_population(population)
 

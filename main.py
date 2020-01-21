@@ -4,7 +4,7 @@ import random
 # =============================================================================
 # ==== META
 
-GROUP_ID = 34
+GROUP_ID = 1
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 MIN_SIZE = 12
 MAX_SIZE = 18
@@ -62,6 +62,18 @@ def mutate_swap_letter(word):
     changed_letter = random.randint(0, len(word) - 2)
     return word[0:changed_letter] + word[changed_letter + 1] + word[changed_letter] + word[changed_letter + 2:]
 
+def mutate_swap_letter_far(word):
+    changed_letter = random.randint(0, len(word) - 1)
+    other_changed_letter = random.randint(0, len(word) - 1)
+
+    if changed_letter == other_changed_letter:
+        return mutate_swap_letter_far(word)
+
+    if changed_letter > other_changed_letter:
+        changed_letter, other_changed_letter = other_changed_letter, changed_letter
+
+    return word[0:changed_letter] + word[other_changed_letter] + word[changed_letter + 1:other_changed_letter] + word[changed_letter] + word[other_changed_letter + 1:]
+
 
 def mutate_change_to_near_letter(word):
     changed_letter = random.randint(0, len(word) - 1)
@@ -96,19 +108,27 @@ def generate_new_population(old_population):
 
     # Mutate some new population
     for i in range(len(new_population)):
-        if random.random() < MUTATION_RATE:
-            mutation_func = [
-                mutate_add_letter, mutate_remove_letter,
-                mutate_change_letter, mutate_change_letter, mutate_change_letter,
-                mutate_change_to_near_letter,
-                shift, mutate_swap_letter
-            ]
+        if random.random() < MUTATION_RATE and i != 0:
+            if check(new_population[i]) < 0.92:
+                mutation_func = [
+                    mutate_add_letter, mutate_remove_letter,
+                    mutate_change_letter, mutate_change_letter, mutate_change_letter,
+                    mutate_change_to_near_letter,
+                    shift, mutate_swap_letter
+                ]
+            else:
+                mutation_func = [
+                    mutate_add_letter, mutate_remove_letter,
+                    mutate_add_letter, mutate_remove_letter,
+                    mutate_swap_letter, mutate_swap_letter,
+                    mutate_swap_letter_far, mutate_swap_letter_far
+                ]
+
             new_population[i] = random.choice(mutation_func)(new_population[i])
 
         new_population[i] = (new_population[i], check(new_population[i]))
 
     return new_population
-
 
 
 def generate_first_population():

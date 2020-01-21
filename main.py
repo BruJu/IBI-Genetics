@@ -4,13 +4,14 @@ import random
 # =============================================================================
 # ==== META
 
-GROUP_ID = 11
+GROUP_ID = 1
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 MIN_SIZE = 12
 MAX_SIZE = 18
 SIZE_OF_POPULATION = 100
-MUTATION_RATE = 0.04
-CROSS_OVER_RATE = 0.08
+MUTATION_RATE = 0.08
+CROSS_OVER_RATE = 0.05
+ELITISM = 10
 
 
 def check(password_attempt):
@@ -63,13 +64,57 @@ def mutate_swap_letter(word):
     changed_letter = random.randint(0, len(word) - 2)
     return word[0:changed_letter] + word[changed_letter + 1] + word[changed_letter] + word[changed_letter + 2:]
 
-# TODO : change for a near letter
+
+def mutate_change_to_near_letter(word):
+    changed_letter = random.randint(0, len(word) - 1)
+    old_letter = word[changed_letter]
+    old_letter_i = LETTERS.index(old_letter)
+    new_letter_position = (old_letter_i + random.randint(-2, 2)) % len(LETTERS)
+    new_letter = LETTERS[new_letter_position]
+    return word[0:changed_letter] + new_letter + word[changed_letter + 1 :]
+
 
 # =============================================================================
 # ==== Genetic Search
 
+def generate_new_population(old_population, _):
+    old_population.sort(key=lambda s: -check(s))
+    evaluation = [check(x) for x in old_population]
+    # evaluation = [len(old_population) - x for x in range(len(old_population))]
 
-def generate_new_population(old_population, evaluation):
+    new_population = [old_population[x] for x in range(ELITISM)]
+
+    z = True
+    for _ in range(SIZE_OF_POPULATION - ELITISM):
+        option = random.random()
+
+        if z:
+           picked_word = random.choices(old_population[0:len(old_population) // 2], weights=evaluation[0:len(old_population) // 2])[0]
+        else:
+           picked_word = random.choices(new_population[0:ELITISM])[0]
+
+        z = not z
+
+        if option < MUTATION_RATE:
+            mutation_func = [
+                mutate_add_letter,
+                mutate_remove_letter,
+                mutate_change_letter, mutate_change_letter,
+                mutate_change_to_near_letter, mutate_change_to_near_letter, mutate_change_to_near_letter
+            ]
+            new_population.append(random.choice(mutation_func)(picked_word))
+        else:
+            option -= MUTATION_RATE
+            if option < CROSS_OVER_RATE:
+                other_word = random.choices(old_population[0:len(old_population) // 2], weights=evaluation[0:len(old_population) // 2])[0]
+
+                new_population.append(combine(picked_word, other_word))
+            else:
+                new_population.append(picked_word)
+
+    return new_population
+
+def generate_new_population_random_weights(old_population, evaluation):
     new_population = []
 
     for _ in range(SIZE_OF_POPULATION):
@@ -81,7 +126,8 @@ def generate_new_population(old_population, evaluation):
             mutation_func = [
                 mutate_add_letter,
                 mutate_remove_letter,
-                mutate_change_letter, mutate_change_letter
+                mutate_change_letter, mutate_change_letter, mutate_change_letter,
+                mutate_change_to_near_letter, mutate_change_to_near_letter
             ]
             new_population.append(random.choice(mutation_func)(picked_word))
         else:

@@ -4,13 +4,13 @@ import random
 # =============================================================================
 # ==== META
 
-GROUP_ID = 1
+GROUP_ID = 34
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 MIN_SIZE = 12
 MAX_SIZE = 18
 SIZE_OF_POPULATION = 100
-MUTATION_RATE = 0.90
-ELITISM = 15
+MUTATION_RATE = 0.99
+ELITISM = 20
 
 WORD = 0
 SCORE = 1
@@ -99,6 +99,17 @@ def generate_new_population(old_population):
     # Elite keeping
     new_population = [old_population[x][WORD] for x in range(ELITISM)]
 
+    # Not Than Much Elite Generating
+    NOT_THAT_MUCH_ELITE = 5
+    RANDOM_CHANGE = 0.3
+    for not_that_much_elite_i in range(NOT_THAT_MUCH_ELITE):
+        elite = random.choice(old_population[0:ELITISM])[WORD]
+
+        for _ in range(int(len(elite) * RANDOM_CHANGE)):
+            elite = mutate_change_letter(elite)
+
+        new_population.append(elite)
+
     # Crossover not elite
     while len(new_population) < SIZE_OF_POPULATION:
         picked_words = random.choices(old_population, weights=evaluation, k=2)
@@ -108,7 +119,7 @@ def generate_new_population(old_population):
 
     # Mutate some new population
     for i in range(len(new_population)):
-        if random.random() < MUTATION_RATE and i != 0:
+        if random.random() < MUTATION_RATE:
             if check(new_population[i]) < 0.92:
                 mutation_func = [
                     mutate_add_letter, mutate_remove_letter,
@@ -145,7 +156,7 @@ def generate_first_population():
 # ==== Main
 
 
-if __name__ == '__main__':
+def do_one_try():
     population = generate_first_population()
 
     generation = 0
@@ -166,3 +177,14 @@ if __name__ == '__main__':
         population = generate_new_population(population)
 
     print("Oh and it's the solution ¯\\_(ツ)_/¯")
+    return generation
+
+if __name__ == '__main__':
+    generations = []
+
+    for i in range(10):
+        generations.append(do_one_try())
+
+    print(generations)
+    print(sum(generations) / len(generations))
+

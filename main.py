@@ -22,16 +22,14 @@ SIZE_OF_POPULATION = 100
 # Mutation rate
 MUTATION_RATE = 1
 # Elitism (number of best individual kept for breeding)
-ELITISM_BREED = 10
+ELITISM_BREED = 15
 # Preserved elites (number of best individual kept intact)
-ELITISM_KEEP = 20
-
-DIFFERENT_BREED = 10
+ELITISM_KEEP = 15
 
 # == Degenerate elites : we can select some elites and force a number of letters change to try to randomly find the
 #                      right password
 # Number of elites that are forced to mutate
-DEGENERATE_ELITES = 20
+DEGENERATE_ELITES = 10
 # Proportion of changed letters
 RANDOM_CHANGE = 0.4
 
@@ -229,42 +227,13 @@ WEIGHT_LOW_SCORE = [1, 1,
 # Low score definition
 LOW_SCORE = 0.92
 # Probabilities on high score
-WEIGHT_HIGH_SCORE = [3, 3,
+WEIGHT_HIGH_SCORE = [1, 1,
                      1, 1, 2,
                      0.5, 0.5, 3,
                      0]
 
 # =============================================================================
 # ==== Genetic Search
-
-
-def different_score(word, new_population):
-    for new_word, _ in new_population:
-        diff_letter = 0
-
-        for i_letter in range(len(word)):
-            if i_letter >= len(new_word):
-                break
-
-            if word[i_letter] != new_word[i_letter]:
-                diff_letter += 1
-
-        if diff_letter >= 4:
-            return True
-
-    return False
-
-
-def keep_different_population(old_population, new_population):
-
-    for individual, _ in old_population:
-        if different_score(individual, new_population):
-            new_population.append((individual, _))
-
-            if len(new_population) >= ELITISM_BREED + DIFFERENT_BREED:
-                return new_population
-
-    return new_population
 
 
 def generate_new_population(old_population):
@@ -274,28 +243,27 @@ def generate_new_population(old_population):
     :return: A new population
     """
     old_population.sort(key=lambda s: -s[SCORE])
-    if old_population[0][SCORE] < LOW_SCORE:
-        old_population = old_population[0:ELITISM_BREED]
-    else:
-        old_population = keep_different_population(old_population, old_population[0:ELITISM_BREED])
-
+    old_population = old_population[0:ELITISM_BREED]
     # evaluation = [x[SCORE] for x in old_population]
     evaluation = [SIZE_OF_POPULATION - x for x in range(len(old_population))]
 
     # Elite keeping
     new_population = [old_population[x] for x in range(min(ELITISM_KEEP, len(old_population)))]
 
+    words_set = set()
+
+    for np in new_population:
+        words_set.add(np[WORD])
+
     # Keep some elites that we force to mutate
+    for not_that_much_elite_i in range(DEGENERATE_ELITES):
+        elite = random.choice(old_population)[WORD]
 
-    if old_population[0][SCORE] < LOW_SCORE:
-        for not_that_much_elite_i in range(DEGENERATE_ELITES):
-            elite = random.choice(old_population)[WORD]
+        for _ in range(int(len(elite) * RANDOM_CHANGE)):
+            elite = mutate_change_letter(elite)
 
-            for _ in range(int(len(elite) * RANDOM_CHANGE)):
-                elite = mutate_change_letter(elite)
-
-            new_population.append([elite, check(elite)])
-
+        new_population.append([elite, check(elite)])
+        words_set.add(elite)
 
     # Crossover not elite
     while len(new_population) < SIZE_OF_POPULATION:
@@ -312,7 +280,8 @@ def generate_new_population(old_population):
             else:
                 new_word = random.choices(LIST_OF_MUTATIONS, weights=WEIGHT_HIGH_SCORE)[0](new_word)
 
-        new_population.append([new_word, check(new_word)])
+        if new_word not in words_set:
+            new_population.append([new_word, check(new_word)])
 
     return new_population
 
@@ -335,7 +304,7 @@ def generate_first_population():
 # ==== Main
 
 
-def find_password(base_population=generate_first_population(), target_goal=1.0, acceptable_goal=1.0, verbose=True,
+def find_password(base_population=generate_first_population(), target_goal=1.0, acceptable_goal=1.0, verbose=False,
                   max_gen=None):
     """
     Tries to find the password
@@ -354,9 +323,6 @@ def find_password(base_population=generate_first_population(), target_goal=1.0, 
     while max_gen is None or generation <= max_gen:
         generation += 1
         max_score = max(population, key=lambda x: x[SCORE])
-
-        if generation > 0 and generation % 200 == 0:
-            print(population)
 
         if best_score < max_score[SCORE]:
             if verbose:
@@ -407,7 +373,6 @@ def hybrid_approach(first_selection_final_pop=2, target_first_selection=0.95, cu
     print("Solution in " + str(total_gen + gen))
     return total_gen + gen, solution
 
-
 def find_password_with_restart():
     max_gen = 250
     total_gen = 0
@@ -423,7 +388,7 @@ def find_password_with_restart():
 
 
 def do_one_try():
-    gen, sol = find_password()
+    gen, sol = hybrid_approach()
     #gen, sol = hybrid_approach(first_selection_final_pop=25, cutoff_gen=100)
 
     print(sol[0])

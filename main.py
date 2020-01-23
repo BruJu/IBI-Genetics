@@ -7,7 +7,7 @@ import random
 # == Password search problem parameters
 
 # ID of our group
-GROUP_ID = 334
+GROUP_ID = 34
 # List of possibles characters
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 # Minimal size of the password
@@ -22,9 +22,9 @@ SIZE_OF_POPULATION = 100
 # Mutation rate
 MUTATION_RATE = 1
 # Elitism (number of best individual kept for breeding)
-ELITISM_BREED = 10
+ELITISM_BREED = 15
 # Preserved elites (number of best individual kept intact)
-ELITISM_KEEP = 10
+ELITISM_KEEP = 15
 
 # == Degenerate elites : we can select some elites and force a number of letters change to try to randomly find the
 #                      right password
@@ -118,6 +118,7 @@ def mutate_change_letter(word):
     changed_letter = random.randint(0, len(word) - 1)
     return word[0:changed_letter] + random.choice(LETTERS) + word[changed_letter + 1 :]
 
+
 def mutate_swap_letter(word):
     """
     Swaps two concurrent letters of the word
@@ -150,7 +151,7 @@ def mutate_swap_letter_far(word):
            + word[changed_letter] + word[other_changed_letter + 1:]
 
 
-def mutate_swap_letter_near(word, min_near=1, max_near=5):
+def mutate_swap_letter_near(word, min_near=2, max_near=4):
     """
     Swap two letters of the word
     :param word: The original word
@@ -226,13 +227,14 @@ WEIGHT_LOW_SCORE = [1, 1,
 # Low score definition
 LOW_SCORE = 0.92
 # Probabilities on high score
-WEIGHT_HIGH_SCORE = [2, 2,
-                     1, 1, 3,
-                     1, 1, 3,
+WEIGHT_HIGH_SCORE = [1, 1,
+                     1, 1, 2,
+                     0.5, 0.5, 3,
                      0]
 
 # =============================================================================
 # ==== Genetic Search
+
 
 def generate_new_population(old_population):
     """
@@ -246,7 +248,12 @@ def generate_new_population(old_population):
     evaluation = [SIZE_OF_POPULATION - x for x in range(len(old_population))]
 
     # Elite keeping
-    new_population = [old_population[x][WORD] for x in range(min(ELITISM_KEEP, len(old_population)))]
+    new_population = [old_population[x] for x in range(min(ELITISM_KEEP, len(old_population)))]
+
+    words_set = set()
+
+    for np in new_population:
+        words_set.add(np[WORD])
 
     # Keep some elites that we force to mutate
     for not_that_much_elite_i in range(DEGENERATE_ELITES):
@@ -255,24 +262,26 @@ def generate_new_population(old_population):
         for _ in range(int(len(elite) * RANDOM_CHANGE)):
             elite = mutate_change_letter(elite)
 
-        new_population.append(elite)
+        new_population.append([elite, check(elite)])
+        words_set.add(elite)
 
     # Crossover not elite
     while len(new_population) < SIZE_OF_POPULATION:
+        # Crossover
         picked_words = random.choices(old_population, weights=evaluation, k=2)
 
         new_word = combine(picked_words[0][WORD], picked_words[1][WORD])
-        new_population.append(new_word)
 
-    # Mutate some new population
-    for i in range(len(new_population)):
+        # Mutation
+
         if random.random() < MUTATION_RATE:
-            if check(new_population[i]) < LOW_SCORE:
-                new_population[i] = random.choices(LIST_OF_MUTATIONS, weights=WEIGHT_LOW_SCORE)[0](new_population[i])
+            if check(new_word) < LOW_SCORE:
+                new_word = random.choices(LIST_OF_MUTATIONS, weights=WEIGHT_LOW_SCORE)[0](new_word)
             else:
-                new_population[i] = random.choices(LIST_OF_MUTATIONS, weights=WEIGHT_HIGH_SCORE)[0](new_population[i])
+                new_word = random.choices(LIST_OF_MUTATIONS, weights=WEIGHT_HIGH_SCORE)[0](new_word)
 
-        new_population[i] = (new_population[i], check(new_population[i]))
+        if new_word not in words_set:
+            new_population.append([new_word, check(new_word)])
 
     return new_population
 
@@ -295,7 +304,7 @@ def generate_first_population():
 # ==== Main
 
 
-def find_password(base_population=generate_first_population(), target_goal=1.0, acceptable_goal=1.0, verbose=True,
+def find_password(base_population=generate_first_population(), target_goal=1.0, acceptable_goal=1.0, verbose=False,
                   max_gen=None):
     """
     Tries to find the password
@@ -338,7 +347,7 @@ def find_password(base_population=generate_first_population(), target_goal=1.0, 
     return generation, list_of_solutions
 
 
-def hybrid_approach(first_selection_final_pop=7, target_first_selection=0.85, cutoff_gen=50, verbose=True):
+def hybrid_approach(first_selection_final_pop=2, target_first_selection=0.95, cutoff_gen=100, verbose=False):
     """
     This approach is a two step genetic algorithm :
     - First we start a genetic algorithm to find some interesting individuals with a good score
@@ -361,6 +370,7 @@ def hybrid_approach(first_selection_final_pop=7, target_first_selection=0.85, cu
     gen, solution = find_password(base_population=end_pop, verbose=verbose)
 
     print("Solution in " + str(total_gen + gen))
+    print("Solution in " + str(total_gen + gen))
     return total_gen + gen, solution
 
 def find_password_with_restart():
@@ -378,7 +388,7 @@ def find_password_with_restart():
 
 
 def do_one_try():
-    gen, sol = find_password_with_restart()
+    gen, sol = hybrid_approach()
     #gen, sol = hybrid_approach(first_selection_final_pop=25, cutoff_gen=100)
 
     print(sol[0])
@@ -387,11 +397,13 @@ def do_one_try():
 
 
 if __name__ == '__main__':
-    generations = []
+    while True:
+        generations = []
 
-    for i in range(10):
-        generations.append(do_one_try())
+        for i in range(10):
+            generations.append(do_one_try())
 
-    print(generations)
-    print(sum(generations) / len(generations))
+        print(generations)
+        print(sum(generations) / len(generations))
 
+        GROUP_ID += 100

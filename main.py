@@ -21,8 +21,10 @@ MAX_SIZE = 18
 SIZE_OF_POPULATION = 100
 # Mutation rate
 MUTATION_RATE = 1
-# Elitism (number of best individual kept)
-ELITISM = 10
+# Elitism (number of best individual kept for breeding)
+ELITISM_BREED = 10
+# Preserved elites (number of best individual kept intact)
+ELITISM_KEEP = 10
 
 # == Degenerate elites : we can select some elites and force a number of letters change to try to randomly find the
 #                      right password
@@ -239,16 +241,16 @@ def generate_new_population(old_population):
     :return: A new population
     """
     old_population.sort(key=lambda s: -s[SCORE])
-    old_population = old_population[0:ELITISM]
+    old_population = old_population[0:ELITISM_BREED]
     # evaluation = [x[SCORE] for x in old_population]
     evaluation = [SIZE_OF_POPULATION - x for x in range(len(old_population))]
 
     # Elite keeping
-    new_population = [old_population[x][WORD] for x in range(min(ELITISM, len(old_population)))]
+    new_population = [old_population[x][WORD] for x in range(min(ELITISM_KEEP, len(old_population)))]
 
     # Keep some elites that we force to mutate
     for not_that_much_elite_i in range(DEGENERATE_ELITES):
-        elite = random.choice(old_population[0:ELITISM])[WORD]
+        elite = random.choice(old_population)[WORD]
 
         for _ in range(int(len(elite) * RANDOM_CHANGE)):
             elite = mutate_change_letter(elite)

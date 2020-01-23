@@ -236,7 +236,7 @@ WEIGHT_HIGH_SCORE = [1, 1,
 # ==== Genetic Search
 
 
-def generate_new_population(old_population):
+def generate_new_population(old_population, SIZE_OF_POPULATION=SIZE_OF_POPULATION):
     """
     Generates a new population from an original population
     :param old_population: The original population
@@ -286,7 +286,7 @@ def generate_new_population(old_population):
     return new_population
 
 
-def generate_first_population():
+def generate_first_population(SIZE_OF_POPULATION=SIZE_OF_POPULATION):
     """
     Generates a population of SIZE_OF_POPULATION individuals
     :return: A list of SIZE_OF_POPULATION individuals in the form of tuples (word, score)
@@ -302,6 +302,105 @@ def generate_first_population():
 
 # =============================================================================
 # ==== Main
+
+def find_password_cross_population(population=generate_first_population(), verbose=True):
+    """
+    Tries to find the password
+    :param population: A base population
+    :param verbose: If true, the function will print in the console a lot of useful messages
+    :return: (number_of_passed_generations, list_of_acceptable_answers
+    """
+
+    generation = 0
+    best_score = 0
+
+    while True:
+        generation += 1
+        if generation % 25 == 24:
+            random.shuffle(population)
+
+        max_score = max(population, key=lambda x: x[SCORE])
+
+        if best_score < max_score[SCORE]:
+            if verbose:
+                print("New max score at generation " + str(generation) + " : " + str(max_score))
+
+            best_score = max_score[SCORE]
+
+            if best_score >= 1.0:
+                break
+
+
+        if generation % 25 == 24:
+            reset_population = generate_first_population(SIZE_OF_POPULATION=25)
+            population = population[0:75] + reset_population
+
+        new_population = []
+
+        new_population += generate_new_population(population[0:75], SIZE_OF_POPULATION=75)
+        new_population += generate_new_population(population[75:100], SIZE_OF_POPULATION=25)
+
+        population = new_population
+
+    if verbose:
+        print("Found solution")
+
+    for individual in population:
+        if individual[SCORE] >= 1.0:
+            return generation, [individual[WORD]]
+
+    return generation, None
+
+def find_password_cross_population(population=generate_first_population(), verbose=True):
+    """
+    Tries to find the password
+    :param population: A base population
+    :param verbose: If true, the function will print in the console a lot of useful messages
+    :return: (number_of_passed_generations, list_of_acceptable_answers
+    """
+
+    generation = 0
+    best_score = 0
+
+    number_of_cuts = 4
+    divide_cuts_at = 50
+    divide_cuts_at_re = 100
+
+    while True:
+        generation += 1
+        if generation == divide_cuts_at:
+            number_of_cuts //= 2
+        elif generation == divide_cuts_at_re:
+            number_of_cuts //= 2
+
+        max_score = max(population, key=lambda x: x[SCORE])
+
+        if best_score < max_score[SCORE]:
+            if verbose:
+                print("New max score at generation " + str(generation) + " : " + str(max_score))
+
+            best_score = max_score[SCORE]
+
+            if best_score >= 1.0:
+                break
+
+        new_population = []
+
+        for i in range(number_of_cuts):
+            new_population += generate_new_population(population[SIZE_OF_POPULATION // number_of_cuts * (i + 0):
+                                                                 SIZE_OF_POPULATION // number_of_cuts * (i + 1)],
+                                                      SIZE_OF_POPULATION=SIZE_OF_POPULATION // number_of_cuts)
+
+        population = new_population
+
+    if verbose:
+        print("Found solution")
+
+    for individual in population:
+        if individual[SCORE] >= 1.0:
+            return generation, [individual[WORD]]
+
+    return generation, None
 
 
 def find_password(base_population=generate_first_population(), target_goal=1.0, acceptable_goal=1.0, verbose=False,
@@ -388,7 +487,7 @@ def find_password_with_restart():
 
 
 def do_one_try():
-    gen, sol = hybrid_approach()
+    gen, sol = find_password_cross_population()
     #gen, sol = hybrid_approach(first_selection_final_pop=25, cutoff_gen=100)
 
     print(sol[0])

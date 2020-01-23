@@ -7,7 +7,11 @@ import random
 # == Password search problem parameters
 
 # ID of our group
-GROUP_ID = 334
+REAL_GROUP_ID = 34
+# Number of the tested slot
+EXTRA = 0
+# ID of tested password
+GROUP_ID = EXTRA * 100 + REAL_GROUP_ID
 # List of possibles characters
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 # Minimal size of the password
@@ -20,9 +24,11 @@ MAX_SIZE = 18
 # Size of the population
 SIZE_OF_POPULATION = 100
 # Mutation rate
-MUTATION_RATE = 1
+MUTATION_RATE = 0.99
 # Elitism (number of best individual kept)
-ELITISM = 10
+ELITISM_REPRODUCE = 10
+
+ELITISM_NOCROSS = 5
 
 # == Degenerate elites : we can select some elites and force a number of letters change to try to randomly find the
 #                      right password
@@ -178,7 +184,7 @@ def mutate_change_to_near_letter(word, letter_distance=2):
     new_letter_position = (old_letter_i + random.randint(-letter_distance, letter_distance)) % len(LETTERS)
 
     if new_letter_position == old_letter_i:
-        return mutate_change_to_near_letter(word, letter_distance=letter_distance)
+        return mutate_change_to_near_letter((word, protect), letter_distance=letter_distance)
 
     new_letter = LETTERS[new_letter_position]
     return word[0:changed_letter] + new_letter + word[changed_letter + 1 :]
@@ -212,20 +218,20 @@ def generate_new_population(old_population):
     :return: A new population
     """
     old_population.sort(key=lambda s: -s[SCORE])
-    old_population = old_population[0:ELITISM]
+    old_population = old_population[0:ELITISM_REPRODUCE]
     # evaluation = [x[SCORE] for x in old_population]
     evaluation = [SIZE_OF_POPULATION - x for x in range(len(old_population))]
 
     # Elite keeping
-    new_population = [old_population[x][WORD] for x in range(min(ELITISM, len(old_population)))]
+    new_population = [old_population[x][WORD] for x in range(min(ELITISM_NOCROSS, len(old_population)))]
     new_population = [(elite, [1 for x in range(len(elite))]) for elite in new_population]
 
     # Keep some elites that we force to mutate
     for not_that_much_elite_i in range(DEGENERATE_ELITES):
-        elite = random.choice(old_population[0:ELITISM])[WORD]
+        elite = random.choice(old_population)[WORD]
 
         for _ in range(int(len(elite) * RANDOM_CHANGE)):
-            elite = mutate_change_letter(elite)
+            elite = mutate_change_letter((elite, [1 for x in range(len(elite))]))
 
         new_population.append((elite, [1 for x in range(len(elite))]))
 
@@ -239,7 +245,7 @@ def generate_new_population(old_population):
     # Mutate some new population
     for i in range(len(new_population)):
         if random.random() < MUTATION_RATE:
-            if check(new_population[i]) < LOW_SCORE:
+            if check(new_population[i][0]) < LOW_SCORE:
                 new_population[i] = random.choices(LIST_OF_MUTATIONS, weights=WEIGHT_LOW_SCORE)[0](new_population[i])
             else:
                 new_population[i] = random.choices(LIST_OF_MUTATIONS, weights=WEIGHT_HIGH_SCORE)[0](new_population[i])

@@ -7,7 +7,7 @@ import random
 # == Password search problem parameters
 
 # ID of our group
-GROUP_ID = 234
+GROUP_ID = 334
 # List of possibles characters
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 # Minimal size of the password
@@ -20,16 +20,16 @@ MAX_SIZE = 18
 # Size of the population
 SIZE_OF_POPULATION = 100
 # Mutation rate
-MUTATION_RATE = 0.99
+MUTATION_RATE = 1
 # Elitism (number of best individual kept)
-ELITISM = 20
+ELITISM = 10
 
 # == Degenerate elites : we can select some elites and force a number of letters change to try to randomly find the
 #                      right password
 # Number of elites that are forced to mutate
-DEGENERATE_ELITES = 3
+DEGENERATE_ELITES = 10
 # Proportion of changed letters
-RANDOM_CHANGE = 0.3
+RANDOM_CHANGE = 0.4
 
 # Sometimes we keep the genotypes as a tuple of (WORD, SCORE)
 # We didn't implement it as a dict to get better performances
@@ -116,7 +116,6 @@ def mutate_change_letter(word):
     changed_letter = random.randint(0, len(word) - 1)
     return word[0:changed_letter] + random.choice(LETTERS) + word[changed_letter + 1 :]
 
-
 def mutate_swap_letter(word):
     """
     Swaps two concurrent letters of the word
@@ -149,7 +148,7 @@ def mutate_swap_letter_far(word):
            + word[changed_letter] + word[other_changed_letter + 1:]
 
 
-def mutate_swap_letter_near(word, min_near=2, max_near=2):
+def mutate_swap_letter_near(word, min_near=1, max_near=5):
     """
     Swap two letters of the word
     :param word: The original word
@@ -195,6 +194,11 @@ def mutate_change_to_near_letter(word, letter_distance=2):
     return word[0:changed_letter] + new_letter + word[changed_letter + 1 :]
 
 
+def mutate_change_letter_end(word):
+    changed_letter = random.randint(len(word) // 2, len(word) - 1)
+    return word[0:changed_letter] + random.choice(LETTERS) + word[changed_letter + 1 :]
+
+
 def shift(word):
     """
     Shift every letters in the word to the right
@@ -208,21 +212,21 @@ def shift(word):
 LIST_OF_MUTATIONS = [
     mutate_add_letter, mutate_remove_letter,
     mutate_swap_letter, mutate_swap_letter_far, mutate_swap_letter_near,
-    mutate_change_letter, mutate_change_to_near_letter,
+    mutate_change_letter, mutate_change_to_near_letter, mutate_change_letter_end,
     shift
 ]
 
 # Probabilities on low score
 WEIGHT_LOW_SCORE = [1, 1,
                     1, 1, 1,
-                    3, 1,
+                    3, 1, 0,
                     1]
 # Low score definition
 LOW_SCORE = 0.92
 # Probabilities on high score
-WEIGHT_HIGH_SCORE = [1.5, 3,
-                     1, 1, 5,
-                     0, 0,
+WEIGHT_HIGH_SCORE = [2, 2,
+                     1, 1, 3,
+                     1, 1, 3,
                      0]
 
 # =============================================================================
@@ -320,7 +324,7 @@ def find_password(base_population=generate_first_population(), target_goal=1.0, 
 
         population = generate_new_population(population)
 
-    if verbose:
+    if verbose and best_score >= target_goal:
         print("Found solution")
 
     list_of_solutions = []
@@ -332,7 +336,7 @@ def find_password(base_population=generate_first_population(), target_goal=1.0, 
     return generation, list_of_solutions
 
 
-def hybrid_approach(first_selection_final_pop=7, target_first_selection=0.85, cutoff_gen=50):
+def hybrid_approach(first_selection_final_pop=7, target_first_selection=0.85, cutoff_gen=50, verbose=True):
     """
     This approach is a two step genetic algorithm :
     - First we start a genetic algorithm to find some interesting individuals with a good score
@@ -347,20 +351,33 @@ def hybrid_approach(first_selection_final_pop=7, target_first_selection=0.85, cu
 
     while len(end_pop) < first_selection_final_pop:
         gen, new_pop = find_password(target_goal=target_first_selection, acceptable_goal=target_first_selection - 0.05,
-                                     verbose=False, max_gen=cutoff_gen)
+                                     verbose=verbose, max_gen=cutoff_gen)
         total_gen += gen
         for ind in new_pop:
             end_pop.append(ind)
 
-    gen, solution = find_password(base_population=end_pop, verbose=False)
+    gen, solution = find_password(base_population=end_pop, verbose=verbose)
 
     print("Solution in " + str(total_gen + gen))
     return total_gen + gen, solution
 
+def find_password_with_restart():
+    max_gen = 250
+    total_gen = 0
+    while True:
+        gen, sol = find_password(max_gen=max_gen)
+
+        total_gen += gen
+
+        if len(sol) != 0:
+            return total_gen, sol
+
+        max_gen = int(max_gen * 1.2)
+
 
 def do_one_try():
-    gen, sol = find_password()
-    #gen, sol = hybrid_approach()
+    gen, sol = find_password_with_restart()
+    #gen, sol = hybrid_approach(first_selection_final_pop=25, cutoff_gen=100)
 
     print(sol[0])
 

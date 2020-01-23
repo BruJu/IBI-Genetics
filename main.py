@@ -179,6 +179,7 @@ def do_one_try():
     print("Oh and it's the solution ¯\\_(ツ)_/¯")
     return generation
 
+
 if __name__ == '__main__':
     generations = []
 

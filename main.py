@@ -77,19 +77,7 @@ def combine(word1, word2):
         return combine(word2, word1)
 
     break_point = random.randint(1, len(word1) - 1)
-    new_word = word1[:break_point] + word2[break_point:]
-
-    combine_protect = []
-    for i in range(len(new_word)):
-        if i < len(word1):
-            if word1[i] == word2[i]:
-                combine_protect.append(0.2)
-            else:
-                combine_protect.append(0.6)
-        else:
-            combine_protect.append(0.4)
-
-    return new_word, combine_protect
+    return word1[:break_point] + word2[break_point:]
 
 
 def mutate_add_letter(word):
@@ -99,7 +87,6 @@ def mutate_add_letter(word):
     :return: A new word, in which a random letter has been placed. If the original word has the max length, the returned
     word is the same as the given word
     """
-    word, protect = word
     if len(word) == MAX_SIZE:
         return word
 
@@ -113,7 +100,6 @@ def mutate_remove_letter(word):
     :return: A new word, which is the same as the previous word but with one letter taken out randomly. If the original
     word already has the minimal password size, the returned word will be the same as the original word.
     """
-    word, protect = word
     if len(word) == MIN_SIZE:
         return word
 
@@ -127,10 +113,8 @@ def mutate_change_letter(word):
     :param word: The word
     :return: A new word, which is the same as the given word but one letter has been changed
     """
-    word, protect = word
-    changed_letter = random.choices([x for x in range(len(protect))], weights=protect)[0]
+    changed_letter = random.randint(0, len(word) - 1)
     return word[0:changed_letter] + random.choice(LETTERS) + word[changed_letter + 1 :]
-
 
 def mutate_swap_letter(word):
     """
@@ -138,11 +122,7 @@ def mutate_swap_letter(word):
     :param word: The original word
     :return: A new word, with two letters concurrent swapped
     """
-    word, protect = word
-    changed_letter = random.choices([x for x in range(len(protect))], weights=protect)[0]
-    if changed_letter == len(word) - 1:
-        return mutate_add_letter((word, protect))
-
+    changed_letter = random.randint(0, len(word) - 2)
     return word[0:changed_letter] + word[changed_letter + 1] + word[changed_letter] + word[changed_letter + 2:]
 
 
@@ -152,13 +132,45 @@ def mutate_swap_letter_far(word):
     :param word: The original word
     :return: A new word, with two letters swapped. The letters are took in random position
     """
-    word, protect = word
-    changed_letter, other_changed_letter = random.choices([x for x in range(len(protect))], weights=protect, k=2)
+    changed_letter = random.randint(0, len(word) - 1)
+    other_changed_letter = random.randint(0, len(word) - 1)
+
+    if changed_letter == other_changed_letter:
+        # Because python does not have do while, the easiest approach is to recall the function if the two chosen
+        # position are the same
+        return mutate_swap_letter_far(word)
 
     if changed_letter > other_changed_letter:
         changed_letter, other_changed_letter = other_changed_letter, changed_letter
 
     # Python doesn't allow two assign the chars of a string
+    return word[0:changed_letter] + word[other_changed_letter] + word[changed_letter + 1:other_changed_letter]\
+           + word[changed_letter] + word[other_changed_letter + 1:]
+
+
+def mutate_swap_letter_near(word, min_near=1, max_near=5):
+    """
+    Swap two letters of the word
+    :param word: The original word
+    :param min_near: Minimum distance from the original letter
+    :param max_near: Maximum distance from the original letter
+    :return: A new word, with two letters swapped. The letters are took at near position
+    """
+    changed_letter = random.randint(0, len(word) - 1)
+    distance = random.randint(min_near, max_near)
+    if random.random() < 0.5:
+        distance = -distance
+
+    other_changed_letter = changed_letter + distance
+
+    if other_changed_letter < 0 or other_changed_letter >= len(word):
+        return mutate_swap_letter_near(word, min_near=min_near, max_near=max_near)
+
+    # Defintively not a copy paste of mutate_swap_letter_far at this point
+
+    if changed_letter > other_changed_letter:
+        changed_letter, other_changed_letter = other_changed_letter, changed_letter
+
     return word[0:changed_letter] + word[other_changed_letter] + word[changed_letter + 1:other_changed_letter]\
            + word[changed_letter] + word[other_changed_letter + 1:]
 
@@ -170,9 +182,7 @@ def mutate_change_to_near_letter(word, letter_distance=2):
     :param letter_distance: Distance of the new letter from the replaced letter in the alphabet
     :return: A new word with a letteer changed for a letter near in the alphabet
     """
-    word, protect = word
-    changed_letter = random.choices([x for x in range(len(protect))], weights=protect)[0]
-
+    changed_letter = random.randint(0, len(word) - 1)
     old_letter = word[changed_letter]
     old_letter_i = LETTERS.index(old_letter)
     new_letter_position = (old_letter_i + random.randint(-letter_distance, letter_distance)) % len(LETTERS)
@@ -184,23 +194,40 @@ def mutate_change_to_near_letter(word, letter_distance=2):
     return word[0:changed_letter] + new_letter + word[changed_letter + 1 :]
 
 
+def mutate_change_letter_end(word):
+    changed_letter = random.randint(len(word) // 2, len(word) - 1)
+    return word[0:changed_letter] + random.choice(LETTERS) + word[changed_letter + 1 :]
+
+
+def shift(word):
+    """
+    Shift every letters in the word to the right
+    :param word: The word
+    :return: The word but with letters shifted to the right. The last letter is placed in the first position
+    """
+    return word[-1] + word[0:-1]
+
+
 # List of defined mutation
 LIST_OF_MUTATIONS = [
     mutate_add_letter, mutate_remove_letter,
-    mutate_swap_letter, mutate_swap_letter_far,
-    mutate_change_letter, mutate_change_to_near_letter
+    mutate_swap_letter, mutate_swap_letter_far, mutate_swap_letter_near,
+    mutate_change_letter, mutate_change_to_near_letter, mutate_change_letter_end,
+    shift
 ]
 
 # Probabilities on low score
 WEIGHT_LOW_SCORE = [1, 1,
-                    1, 1,
-                    3, 1]
+                    1, 1, 1,
+                    3, 1, 0,
+                    1]
 # Low score definition
 LOW_SCORE = 0.92
 # Probabilities on high score
 WEIGHT_HIGH_SCORE = [2, 2,
-                     1, 1,
-                     1, 1]
+                     1, 1, 3,
+                     1, 1, 3,
+                     0]
 
 # =============================================================================
 # ==== Genetic Search
@@ -218,7 +245,6 @@ def generate_new_population(old_population):
 
     # Elite keeping
     new_population = [old_population[x][WORD] for x in range(min(ELITISM, len(old_population)))]
-    new_population = [(elite, [1 for x in range(len(elite))]) for elite in new_population]
 
     # Keep some elites that we force to mutate
     for not_that_much_elite_i in range(DEGENERATE_ELITES):
@@ -227,7 +253,7 @@ def generate_new_population(old_population):
         for _ in range(int(len(elite) * RANDOM_CHANGE)):
             elite = mutate_change_letter(elite)
 
-        new_population.append((elite, [1 for x in range(len(elite))]))
+        new_population.append(elite)
 
     # Crossover not elite
     while len(new_population) < SIZE_OF_POPULATION:

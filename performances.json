@@ -1,0 +1,52 @@
+[
+  {
+    "group_id": 34,
+    "performances": [
+      {
+        "generated_individuals": 31368,
+        "generation_number": 314,
+        "murders": 26
+      },
+      {
+        "generated_individuals": 20446,
+        "generation_number": 207,
+        "murders": 12
+      },
+      {
+        "generated_individuals": 15254,
+        "generation_number": 150,
+        "murders": 15
+      },
+      {
+        "generated_individuals": 44342,
+        "generation_number": 442,
+        "murders": 40
+      }
+    ]
+  },
+  {
+    "group_id": 134,
+    "performances": [
+      {
+        "generated_individuals": 11067,
+        "generation_number": 110,
+        "murders": 7
+      },
+      {
+        "generated_individuals": 9099,
+        "generation_number": 89,
+        "murders": 6
+      },
+      {
+        "generated_individuals": 7553,
+        "generation_number": 78,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 12231,
+        "generation_number": 125,
+        "murders": 8
+      }
+    ]
+  }
+]

@@ -8,6 +8,7 @@ from enum import IntEnum    # IntEnum enables to compare member of an enum
 # == Password search problem parameters
 
 # ID of our group
+TRUE_GROUP_ID = 34
 GROUP_ID = 34
 # List of possibles characters
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -27,8 +28,8 @@ NATURAL_SELECTION = 20 # Number of individuals that can be represented in the ne
 KEPT_ELITS = 10         # Number of individuals that are kept and not crossed
 
 
-# == Degenerate elites : we can select some elites and force a number of letters change to try to
-#                      randomly find the right password
+# == Degenerate elites : we can select some elites and force a lot of changes to try to randomly
+#                        find the right password
 # Number of elites that are forced to mutate
 DEGENERATE_ELITES = 10
 # Proportion of changed letters
@@ -45,7 +46,7 @@ def check(password_attempt):
 
 
 # =================================================================================================
-# ==== Local Mutations
+# ==== Mutations
 
 
 class ILocalMutation:
@@ -200,15 +201,22 @@ LOCAL_MUTATIONS, LOCAL_MUTATIONS_WEIGHTS = _unpack_mutation_list(MUTATION_LIST)
 
 
 class KillStatus(IntEnum):
-    # Innocent individuals never killed anybody
+    """
+    Kill status (Some individual can decide to wipe the rest of the population : they can do so
+    only once, and their children will then not be kept except if they are better than them)
+    """
+    'Innocent individuals never killed anybody'
     INNOCENT = 0,
-    # Murderers have killed other people
+    'Murderers have killed other people'
     MURDERER = 1,
-    # This individual is borned from a murderer
+    'This individual is borned from a murderer'
     MURDERER_BLOOD = 2
 
     @staticmethod
     def inherit(parent1=None, parent2=None):
+        """
+        Computes the kill status of a child from its eventual parents
+        """
         if parent1 is not None and parent1.kill_status != KillStatus.INNOCENT:
             return KillStatus.MURDERER_BLOOD
         elif parent2 is not None and parent2.kill_status != KillStatus.INNOCENT:
@@ -227,8 +235,8 @@ class Individual:
         :param cloned_from: If None, this individual will be randomly generated else this
         individual will be isued from cloned_from
         :param crossed_with: If None, this individual will be a clone of cloned_from (or randomly
-        generated if cloned_from is also None), else
-        it will be a cross over of the cloned_from and crossed_with
+        generated if cloned_from is also None), else it will be a cross over of the cloned_from
+        and crossed_with
         """
         self.kill_status = KillStatus.inherit(cloned_from, crossed_with)
 
@@ -277,9 +285,15 @@ class Individual:
                 self.kill_status = KillStatus.MURDERER_BLOOD
     
     def to_string(self):
+        """
+        Gives a string representation of this object
+        """
         return "<{0}> ; Score = {1:.4f}".format("".join(self.word), self.get_score())
     
     def word_to_str(self):
+        """
+        Gives the word that is composed from this individual
+        """
         return "".join(self.word)
 
 
@@ -287,7 +301,6 @@ def _print_individual():
     """
     Basic visual testing of the Individual class
     """
-
     ind_a = Individual()
     print(ind_a.to_string())
     ind_b = Individual()
@@ -307,12 +320,21 @@ def _print_individual():
 
 
 class Population:
-    def __init__(self):
+    """
+    A population is a group of individuals that lives in harmony (or not)
+    """
+    def __init__(self, kill_point=20):
+        """
+        Constructs an empty population
+        :param kill_point: The age at which an individual rebels and decides to kill everybody
+        that is not better than himself
+        """
         self.individuals = []
         self.generation_number = 0
         self.best_score = 0
-        self.kill_point = 50
+        self.kill_point = kill_point
         self.number_of_murders = 0
+        self.generated_individuals = 0
 
     def sort_members(self):
         """
@@ -328,10 +350,15 @@ class Population:
         number_of_iteration = SIZE_OF_POPULATION - len(self.individuals)
         for _ in range(number_of_iteration):
             self.individuals.append(Individual())
+            self.generated_individuals += 1
 
         return self.sort_members()
 
     def set_dict_of_individuals_as_current_population(self, new_individuals: dict):
+        """
+        Set the current population as the population contained in the passed dictionnary
+        :param new_individuals: The list of new individuals
+        """
         self.individuals = []
 
         for _, individual in new_individuals.items():
@@ -367,6 +394,13 @@ class Population:
                 i = i + 1
 
     def generate_next_generation(self, verbose=False):
+        """
+        Generates the next generation. It does so by either purging the population if an individual
+        wants to kill everybody (its age = population kill_point) or by generating a new population
+        using standard genetic algorithm process.
+        :param verbose: If true, if a better individual is found in this new generation, it will
+        be displayed on console
+        """
         self.purge_murderer_blood()
         self.individuals = self.individuals[0:NATURAL_SELECTION]
         sacrificial_generation = False
@@ -402,6 +436,7 @@ class Population:
                     degenerativ_elite.apply_mutation(force=True)
                 
                 new_generation_add(degenerativ_elite)
+                self.generated_individuals += 1
 
             # Cross over to fill the rest
             scores = [SIZE_OF_POPULATION - i for i in range(len(self.individuals))]
@@ -411,6 +446,7 @@ class Population:
                 word = Individual(word_a, word_b)
                 word.apply_mutation()
                 new_generation_add(word)
+                self.generated_individuals += 1
 
             self.generation_number = self.generation_number + 1
             r = self.set_dict_of_individuals_as_current_population(new_generation)
@@ -428,6 +464,16 @@ class Population:
                 print("Generation {0} : {1}".format(self.generation_number, self.individuals[0].to_string()))
 
         return r
+    
+    def get_analytics(self):
+        """
+        Returns some analytics on this population that may be or may be not interesting
+        """
+        return {
+            'generation_number': self.generation_number,
+            'murders': self.number_of_murders,
+            'generated_individuals': self.generated_individuals
+        }
         
 
 
@@ -437,17 +483,44 @@ class Population:
 
 
 def find_password():
+    """
+    Finds the current password using a genetic algorithm
+    :returns: (the password, some analytics)
+    """
     population = Population()
     population.generate_new_members()
 
     while not population.generate_next_generation(verbose=False):
-        #if population.generation_number % 100 == 0:
-        #    print(", ".join([ind.to_string() for ind in population.individuals[0:10]]))
-
         pass
     
-    return population.individuals[0].word_to_str(), population.generation_number, population.number_of_murders
+    return population.individuals[0].word_to_str(), population.get_analytics()
 
 
-print(find_password())
+def benchmark(max_number_of_tested_passwords=10, number_of_attempts=20):
+    """
+    Looks for a lot of password
+    :param max_number_of_tested_passwords: Number of passwords to find
+    :param number_of_attempts: Number of times each password is searched
+    """
+    total_perfs = []
+    for hundred_group_id in range(max_number_of_tested_passwords):
+        global GROUP_ID
+        GROUP_ID = hundred_group_id * 100 + TRUE_GROUP_ID
+        
+        perfs = []
 
+        for _ in range(number_of_attempts):
+            local_perf = find_password()
+            perfs.append(local_perf[1])
+
+        total_perfs.append({ 'group_id': GROUP_ID, 'performances': perfs })
+
+    import json
+    json_dump = json.dumps(total_perfs, sort_keys=True, indent=4)
+
+    print(json_dump)
+    with open('performances.json', 'w') as f:
+        json.dump(total_perfs, f, sort_keys=True, indent= 2)
+
+if __name__ == '__main__':
+    benchmark()

@@ -527,5 +527,38 @@ def benchmark(max_number_of_tested_passwords=10, number_of_attempts=20):
     with open('performances.json', 'w') as f:
         json.dump(total_perfs, f, sort_keys=True, indent= 2)
 
+
+def final_report_analytics():
+    import matplotlib
+    import matplotlib.pyplot as plt
+
+    def fitness_evolution():
+        x = []
+        y = []
+
+        population = Population()
+        population.generate_new_members()
+
+        while not population.generate_next_generation(verbose=False):
+            x.append(population.generation_number)
+            y.append(population.individuals[0].get_score())
+
+        
+        x.append(population.generation_number)
+        y.append(1.0)
+
+        plt.plot(x, y)
+        plt.ylabel('Score')
+        plt.show()
+
+
+
+
+    fitness_evolution()
+
+
+
 if __name__ == '__main__':
-    benchmark()
+    #benchmark()
+
+    final_report_analytics()

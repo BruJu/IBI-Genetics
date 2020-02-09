@@ -20,7 +20,7 @@ MAX_SIZE = 18
 # Size of the population
 SIZE_OF_POPULATION = 100
 # Mutation rate
-MUTATION_RATE = 0.01
+MUTATION_RATE = 0.05
 # Elitism (number of best individual kept)
 ELITISM = 10
 
@@ -181,7 +181,7 @@ LOCAL_MUTATIONS = [
     MutationSwap(1,1), MutationSwap(1,5)
     ]
 
-LOCAL_MUTATIONS_WEIGHTS = [ 1, 1, 4, 2, 6, 6 ]
+LOCAL_MUTATIONS_WEIGHTS = [ 3, 3, 4, 2, 6, 6 ]
 
 
 # =================================================================================================
@@ -323,23 +323,40 @@ class Population:
         return self.individuals[0].get_score() == 1
     
     def generate_next_generation(self, verbose=False):
-        old_population = self.individuals
+        skip_mutation_step = False
 
-        self.individuals = []
-        old_population = old_population[0:ELITISM]
-        evaluation = [SIZE_OF_POPULATION - x for x in range(len(old_population))]
+        to_remove = []
 
-        # Elite cloning
-        self.individuals = [Individual(ind) for ind in old_population[0:ELITISM]]
-
-        # Filling with crossover
-        while len(self.individuals) < SIZE_OF_POPULATION:
-            picked_words = random.choices(old_population, weights=evaluation, k=2)
-            self.individuals.append(Individual(picked_words[0], picked_words[1]))
+        for i, individual in enumerate(self.individuals):
+            if not individual.has_already_killed and individual.generation == self.kill_point:
+                self.individuals = self.individuals[0:i + 1]
+                self.generate_new_members()
+                individual.has_already_killed = True
+                skip_mutation_step = True
+            elif i != 0 and individual.generation >= self.kill_point * (ELITISM - i) + 1:
+                to_remove.append(i)
         
-        # Mutation
-        for individual in self.individuals:
-            individual.apply_mutation(local_mutation_rate=MUTATION_RATE, global_mutation_rate=0)
+        while to_remove:
+            self.individuals.pop(to_remove.pop(-1))
+
+        if not skip_mutation_step:
+            old_population = self.individuals
+
+            self.individuals = []
+            # old_population = old_population[0:ELITISM]
+            evaluation = [SIZE_OF_POPULATION - x for x in range(len(old_population))]
+
+            # Elite cloning
+            self.individuals = [Individual(ind) for ind in old_population[0:ELITISM]]
+
+            # Filling with crossover
+            while len(self.individuals) < SIZE_OF_POPULATION:
+                picked_words = random.choices(old_population, weights=evaluation, k=2)
+                self.individuals.append(Individual(picked_words[0], picked_words[1]))
+            
+            # Mutation
+            for individual in self.individuals[ELITISM:]:
+                individual.apply_mutation(local_mutation_rate=MUTATION_RATE, global_mutation_rate=0)
 
         self.generation_number = self.generation_number + 1
 

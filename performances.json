@@ -3,24 +3,104 @@
     "group_id": 34,
     "performances": [
       {
-        "generated_individuals": 31368,
-        "generation_number": 314,
-        "murders": 26
+        "generated_individuals": 9397,
+        "generation_number": 99,
+        "murders": 1
       },
       {
-        "generated_individuals": 20446,
-        "generation_number": 207,
+        "generated_individuals": 12306,
+        "generation_number": 128,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 14789,
+        "generation_number": 154,
+        "murders": 6
+      },
+      {
+        "generated_individuals": 4134,
+        "generation_number": 44,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 6849,
+        "generation_number": 72,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 6268,
+        "generation_number": 67,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 14101,
+        "generation_number": 148,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 27677,
+        "generation_number": 294,
+        "murders": 6
+      },
+      {
+        "generated_individuals": 14846,
+        "generation_number": 157,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 6410,
+        "generation_number": 68,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 6497,
+        "generation_number": 69,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 34021,
+        "generation_number": 354,
         "murders": 12
       },
       {
-        "generated_individuals": 15254,
-        "generation_number": 150,
-        "murders": 15
+        "generated_individuals": 15027,
+        "generation_number": 157,
+        "murders": 4
       },
       {
-        "generated_individuals": 44342,
-        "generation_number": 442,
-        "murders": 40
+        "generated_individuals": 19593,
+        "generation_number": 204,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 5065,
+        "generation_number": 54,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 15621,
+        "generation_number": 165,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 8210,
+        "generation_number": 82,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 5868,
+        "generation_number": 62,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 10259,
+        "generation_number": 108,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 8483,
+        "generation_number": 87,
+        "murders": 4
       }
     ]
   },
@@ -28,24 +108,944 @@
     "group_id": 134,
     "performances": [
       {
-        "generated_individuals": 11067,
-        "generation_number": 110,
-        "murders": 7
+        "generated_individuals": 2569,
+        "generation_number": 27,
+        "murders": 0
       },
       {
-        "generated_individuals": 9099,
-        "generation_number": 89,
-        "murders": 6
-      },
-      {
-        "generated_individuals": 7553,
-        "generation_number": 78,
+        "generated_individuals": 6776,
+        "generation_number": 67,
         "murders": 3
       },
       {
-        "generated_individuals": 12231,
+        "generated_individuals": 6910,
+        "generation_number": 73,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 4900,
+        "generation_number": 52,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 9657,
+        "generation_number": 101,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 4386,
+        "generation_number": 47,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 6272,
+        "generation_number": 65,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 12989,
+        "generation_number": 135,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 7335,
+        "generation_number": 73,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 3603,
+        "generation_number": 38,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 9984,
+        "generation_number": 106,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 4354,
+        "generation_number": 45,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 9401,
+        "generation_number": 98,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 3858,
+        "generation_number": 39,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 3942,
+        "generation_number": 42,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 3280,
+        "generation_number": 35,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 6501,
+        "generation_number": 64,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 19556,
+        "generation_number": 204,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 11370,
+        "generation_number": 119,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 3920,
+        "generation_number": 39,
+        "murders": 0
+      }
+    ]
+  },
+  {
+    "group_id": 234,
+    "performances": [
+      {
+        "generated_individuals": 3821,
+        "generation_number": 40,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 3584,
+        "generation_number": 37,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 4504,
+        "generation_number": 45,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 6759,
+        "generation_number": 68,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 6298,
+        "generation_number": 64,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 5145,
+        "generation_number": 53,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 5166,
+        "generation_number": 52,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 13194,
+        "generation_number": 134,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 4891,
+        "generation_number": 51,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 7278,
+        "generation_number": 71,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 17360,
+        "generation_number": 174,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 22952,
+        "generation_number": 231,
+        "murders": 6
+      },
+      {
+        "generated_individuals": 6155,
+        "generation_number": 64,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 6652,
+        "generation_number": 66,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 10672,
+        "generation_number": 108,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 15361,
+        "generation_number": 153,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 15038,
+        "generation_number": 153,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 8224,
+        "generation_number": 84,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 5519,
+        "generation_number": 54,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 2838,
+        "generation_number": 29,
+        "murders": 0
+      }
+    ]
+  },
+  {
+    "group_id": 334,
+    "performances": [
+      {
+        "generated_individuals": 5208,
+        "generation_number": 56,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 8168,
+        "generation_number": 87,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 27618,
+        "generation_number": 286,
+        "murders": 10
+      },
+      {
+        "generated_individuals": 6021,
+        "generation_number": 65,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 11747,
         "generation_number": 125,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 5673,
+        "generation_number": 61,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 8346,
+        "generation_number": 89,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 14567,
+        "generation_number": 155,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 9255,
+        "generation_number": 99,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 11121,
+        "generation_number": 118,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 6744,
+        "generation_number": 73,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 11814,
+        "generation_number": 126,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 6797,
+        "generation_number": 73,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 8117,
+        "generation_number": 84,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 12228,
+        "generation_number": 132,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 23609,
+        "generation_number": 251,
+        "murders": 6
+      },
+      {
+        "generated_individuals": 4761,
+        "generation_number": 51,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 10582,
+        "generation_number": 112,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 7332,
+        "generation_number": 78,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 12629,
+        "generation_number": 133,
+        "murders": 4
+      }
+    ]
+  },
+  {
+    "group_id": 434,
+    "performances": [
+      {
+        "generated_individuals": 21606,
+        "generation_number": 227,
         "murders": 8
+      },
+      {
+        "generated_individuals": 5480,
+        "generation_number": 59,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 18431,
+        "generation_number": 193,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 12810,
+        "generation_number": 133,
+        "murders": 6
+      },
+      {
+        "generated_individuals": 19769,
+        "generation_number": 210,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 6667,
+        "generation_number": 72,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 12493,
+        "generation_number": 135,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 18528,
+        "generation_number": 196,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 25473,
+        "generation_number": 267,
+        "murders": 8
+      },
+      {
+        "generated_individuals": 14497,
+        "generation_number": 151,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 9270,
+        "generation_number": 98,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 7137,
+        "generation_number": 77,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 15593,
+        "generation_number": 162,
+        "murders": 7
+      },
+      {
+        "generated_individuals": 7242,
+        "generation_number": 77,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 22891,
+        "generation_number": 245,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 12537,
+        "generation_number": 133,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 17544,
+        "generation_number": 185,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 8506,
+        "generation_number": 90,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 8524,
+        "generation_number": 90,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 23683,
+        "generation_number": 252,
+        "murders": 6
+      }
+    ]
+  },
+  {
+    "group_id": 534,
+    "performances": [
+      {
+        "generated_individuals": 6163,
+        "generation_number": 65,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 12586,
+        "generation_number": 134,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 12528,
+        "generation_number": 132,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 4389,
+        "generation_number": 47,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 11356,
+        "generation_number": 120,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 28297,
+        "generation_number": 300,
+        "murders": 8
+      },
+      {
+        "generated_individuals": 20308,
+        "generation_number": 214,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 4850,
+        "generation_number": 52,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 5027,
+        "generation_number": 54,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 15307,
+        "generation_number": 164,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 8076,
+        "generation_number": 86,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 45015,
+        "generation_number": 472,
+        "murders": 16
+      },
+      {
+        "generated_individuals": 26249,
+        "generation_number": 275,
+        "murders": 7
+      },
+      {
+        "generated_individuals": 4047,
+        "generation_number": 43,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 8083,
+        "generation_number": 85,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 22308,
+        "generation_number": 236,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 10015,
+        "generation_number": 105,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 6069,
+        "generation_number": 64,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 11364,
+        "generation_number": 120,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 4761,
+        "generation_number": 51,
+        "murders": 0
+      }
+    ]
+  },
+  {
+    "group_id": 634,
+    "performances": [
+      {
+        "generated_individuals": 6913,
+        "generation_number": 74,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 9324,
+        "generation_number": 100,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 27471,
+        "generation_number": 292,
+        "murders": 7
+      },
+      {
+        "generated_individuals": 5756,
+        "generation_number": 62,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 5663,
+        "generation_number": 61,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 18203,
+        "generation_number": 193,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 3929,
+        "generation_number": 42,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 39915,
+        "generation_number": 417,
+        "murders": 17
+      },
+      {
+        "generated_individuals": 13185,
+        "generation_number": 139,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 16472,
+        "generation_number": 173,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 18988,
+        "generation_number": 198,
+        "murders": 7
+      },
+      {
+        "generated_individuals": 27844,
+        "generation_number": 292,
+        "murders": 8
+      },
+      {
+        "generated_individuals": 12976,
+        "generation_number": 139,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 14634,
+        "generation_number": 156,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 26447,
+        "generation_number": 278,
+        "murders": 8
+      },
+      {
+        "generated_individuals": 16949,
+        "generation_number": 173,
+        "murders": 10
+      },
+      {
+        "generated_individuals": 14765,
+        "generation_number": 154,
+        "murders": 6
+      },
+      {
+        "generated_individuals": 19294,
+        "generation_number": 206,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 5117,
+        "generation_number": 55,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 17265,
+        "generation_number": 182,
+        "murders": 5
+      }
+    ]
+  },
+  {
+    "group_id": 734,
+    "performances": [
+      {
+        "generated_individuals": 28120,
+        "generation_number": 298,
+        "murders": 9
+      },
+      {
+        "generated_individuals": 5032,
+        "generation_number": 54,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 19089,
+        "generation_number": 203,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 53603,
+        "generation_number": 564,
+        "murders": 19
+      },
+      {
+        "generated_individuals": 13240,
+        "generation_number": 141,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 23387,
+        "generation_number": 247,
+        "murders": 7
+      },
+      {
+        "generated_individuals": 28480,
+        "generation_number": 305,
+        "murders": 6
+      },
+      {
+        "generated_individuals": 11823,
+        "generation_number": 125,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 9792,
+        "generation_number": 103,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 24996,
+        "generation_number": 261,
+        "murders": 11
+      },
+      {
+        "generated_individuals": 19819,
+        "generation_number": 210,
+        "murders": 6
+      },
+      {
+        "generated_individuals": 11250,
+        "generation_number": 118,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 12947,
+        "generation_number": 140,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 13652,
+        "generation_number": 143,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 6476,
+        "generation_number": 70,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 10936,
+        "generation_number": 117,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 6298,
+        "generation_number": 67,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 16634,
+        "generation_number": 176,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 37847,
+        "generation_number": 399,
+        "murders": 13
+      },
+      {
+        "generated_individuals": 34944,
+        "generation_number": 364,
+        "murders": 16
+      }
+    ]
+  },
+  {
+    "group_id": 834,
+    "performances": [
+      {
+        "generated_individuals": 7064,
+        "generation_number": 75,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 3600,
+        "generation_number": 38,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 3046,
+        "generation_number": 32,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 4347,
+        "generation_number": 45,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 3215,
+        "generation_number": 34,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 7693,
+        "generation_number": 80,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 17030,
+        "generation_number": 176,
+        "murders": 6
+      },
+      {
+        "generated_individuals": 13671,
+        "generation_number": 140,
+        "murders": 6
+      },
+      {
+        "generated_individuals": 5084,
+        "generation_number": 52,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 20068,
+        "generation_number": 208,
+        "murders": 8
+      },
+      {
+        "generated_individuals": 10460,
+        "generation_number": 110,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 6569,
+        "generation_number": 68,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 19823,
+        "generation_number": 202,
+        "murders": 11
+      },
+      {
+        "generated_individuals": 10982,
+        "generation_number": 112,
+        "murders": 5
+      },
+      {
+        "generated_individuals": 4479,
+        "generation_number": 48,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 13552,
+        "generation_number": 142,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 22867,
+        "generation_number": 238,
+        "murders": 9
+      },
+      {
+        "generated_individuals": 21436,
+        "generation_number": 221,
+        "murders": 9
+      },
+      {
+        "generated_individuals": 4517,
+        "generation_number": 48,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 16083,
+        "generation_number": 172,
+        "murders": 2
+      }
+    ]
+  },
+  {
+    "group_id": 934,
+    "performances": [
+      {
+        "generated_individuals": 12555,
+        "generation_number": 134,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 4289,
+        "generation_number": 45,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 26506,
+        "generation_number": 269,
+        "murders": 10
+      },
+      {
+        "generated_individuals": 3803,
+        "generation_number": 41,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 11348,
+        "generation_number": 120,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 9683,
+        "generation_number": 102,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 5343,
+        "generation_number": 56,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 11088,
+        "generation_number": 115,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 10784,
+        "generation_number": 112,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 12599,
+        "generation_number": 128,
+        "murders": 3
+      },
+      {
+        "generated_individuals": 9122,
+        "generation_number": 96,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 27331,
+        "generation_number": 286,
+        "murders": 8
+      },
+      {
+        "generated_individuals": 18281,
+        "generation_number": 191,
+        "murders": 4
+      },
+      {
+        "generated_individuals": 4817,
+        "generation_number": 50,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 9284,
+        "generation_number": 97,
+        "murders": 1
+      },
+      {
+        "generated_individuals": 6774,
+        "generation_number": 73,
+        "murders": 0
+      },
+      {
+        "generated_individuals": 8478,
+        "generation_number": 88,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 7433,
+        "generation_number": 74,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 9391,
+        "generation_number": 98,
+        "murders": 2
+      },
+      {
+        "generated_individuals": 10259,
+        "generation_number": 109,
+        "murders": 1
       }
     ]
   }

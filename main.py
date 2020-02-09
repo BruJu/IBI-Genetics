@@ -2,6 +2,10 @@ import blackbox
 import random
 from enum import IntEnum    # IntEnum enables to compare member of an enum
 
+# - Students :
+# Julian Bruyat 11706770
+# Jean-Philippe Tisserand 11926733
+
 # =============================================================================
 # ==== META
 
@@ -24,9 +28,10 @@ SIZE_OF_POPULATION = 100
 # Mutation rate
 MUTATION_RATE = 1
 # Elitism (number of best individual kept)
-NATURAL_SELECTION = 20 # Number of individuals that can be represented in the next generation
+NATURAL_SELECTION = 20  # Number of individuals that can be represented in the next generation
 KEPT_ELITS = 10         # Number of individuals that are kept and not crossed
-
+# Ensure population diversity
+KILL_POINT = 20         # Age at which an individual will kill every individual worst than himself
 
 # == Degenerate elites : we can select some elites and force a lot of changes to try to randomly
 #                        find the right password
@@ -323,7 +328,7 @@ class Population:
     """
     A population is a group of individuals that lives in harmony (or not)
     """
-    def __init__(self, kill_point=20):
+    def __init__(self, kill_point=KILL_POINT):
         """
         Constructs an empty population
         :param kill_point: The age at which an individual rebels and decides to kill everybody

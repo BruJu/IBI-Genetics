@@ -18,7 +18,7 @@ MAX_SIZE = 18
 # == Genetic algorithm hyper parameters
 
 # Size of the population
-SIZE_OF_POPULATION = 100
+SIZE_OF_POPULATION = 1000
 # Mutation rate
 MUTATION_RATE = 1
 # Elitism (number of best individual kept for breeding)
@@ -227,7 +227,7 @@ WEIGHT_LOW_SCORE = [1, 1,
 # Low score definition
 LOW_SCORE = 0.92
 # Probabilities on high score
-WEIGHT_HIGH_SCORE = [1, 1,
+WEIGHT_HIGH_SCORE = [3, 3,
                      1, 1, 2,
                      0.5, 0.5, 3,
                      0]
@@ -303,7 +303,7 @@ def generate_first_population(SIZE_OF_POPULATION=SIZE_OF_POPULATION):
 # =============================================================================
 # ==== Main
 
-def find_password_cross_population(population=generate_first_population(), verbose=True):
+def find_password_cross_population_2(population=generate_first_population(), verbose=True):
     """
     Tries to find the password
     :param population: A base population
@@ -314,9 +314,11 @@ def find_password_cross_population(population=generate_first_population(), verbo
     generation = 0
     best_score = 0
 
+    keep_new_pop = 25
+
     while True:
         generation += 1
-        if generation % 25 == 24:
+        if generation == keep_new_pop - 1:
             random.shuffle(population)
 
         max_score = max(population, key=lambda x: x[SCORE])
@@ -331,9 +333,11 @@ def find_password_cross_population(population=generate_first_population(), verbo
                 break
 
 
-        if generation % 25 == 24:
+        if generation == keep_new_pop - 1:
             reset_population = generate_first_population(SIZE_OF_POPULATION=25)
             population = population[0:75] + reset_population
+            keep_new_pop = int(keep_new_pop * 2.25)
+            print(keep_new_pop)
 
         new_population = []
 
@@ -487,7 +491,7 @@ def find_password_with_restart():
 
 
 def do_one_try():
-    gen, sol = find_password_cross_population()
+    gen, sol = find_password_cross_population_2()
     #gen, sol = hybrid_approach(first_selection_final_pop=25, cutoff_gen=100)
 
     print(sol[0])

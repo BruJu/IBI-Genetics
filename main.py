@@ -1,5 +1,6 @@
 import blackbox
 import random
+from enum import IntEnum    # IntEnum enables to compare member of an enum
 
 # =============================================================================
 # ==== META
@@ -22,7 +23,9 @@ SIZE_OF_POPULATION = 100
 # Mutation rate
 MUTATION_RATE = 1
 # Elitism (number of best individual kept)
-ELITISM = 20
+NATURAL_SELECTION = 20 # Number of individuals that can be represented in the next generation
+KEPT_ELITS = 10         # Number of individuals that are kept and not crossed
+
 
 # == Degenerate elites : we can select some elites and force a number of letters change to try to
 #                      randomly find the right password
@@ -127,7 +130,7 @@ class MutationSwap(ILocalMutation):
     def mutate(self, individual):
         mutation_index = random.randint(0, len(individual.word) - 1)
         sign = -1 if random.random() < 0.5 else 1
-        distance = random.randint(self.min_distance - 1, self.max_distance)
+        distance = random.randint(self.min_distance, self.max_distance)
         other_letter_pos = mutation_index + distance * sign
         if sign == -1 and other_letter_pos < 0:
             other_letter_pos = 0
@@ -168,12 +171,12 @@ def _print_mutations_effects():
 # List of local mutations with their rates. We use two different arrays to match random.choices
 # expected parameters
 MUTATION_LIST = [
-    (MutationAddLetter()         , 5),
-    (MutationRemoveLetter()      , 5),
+    (MutationAddLetter()         , 3),
+    (MutationRemoveLetter()      , 3),
     (MutationChangeLetter()      , 3),
-    (MutationChangeToNearLetter(), 0),
-    (MutationSwap(1, 1)          , 5),
-    (MutationSwap(1, 5)          , 0)
+    (MutationChangeToNearLetter(), 3),
+    (MutationSwap(1, 1)          , 3),
+    (MutationSwap(1, 5)          , 3)
 ]
 
 
@@ -194,6 +197,24 @@ LOCAL_MUTATIONS, LOCAL_MUTATIONS_WEIGHTS = _unpack_mutation_list(MUTATION_LIST)
 
 # =================================================================================================
 # ==== Individual manipulation
+
+
+class KillStatus(IntEnum):
+    # Innocent individuals never killed anybody
+    INNOCENT = 0,
+    # Murderers have killed other people
+    MURDERER = 1,
+    # This individual is borned from a murderer
+    MURDERER_BLOOD = 2
+
+    @staticmethod
+    def inherit(parent1=None, parent2=None):
+        if parent1 is not None and parent1.kill_status != KillStatus.INNOCENT:
+            return KillStatus.MURDERER_BLOOD
+        elif parent2 is not None and parent2.kill_status != KillStatus.INNOCENT:
+            return KillStatus.MURDERER_BLOOD
+        else:
+            return KillStatus.INNOCENT
 
 
 class Individual:
@@ -217,6 +238,7 @@ class Individual:
                 self.word.append(random.choice(LETTERS))
             
             self.score = None
+            self.has_killed = False
         elif crossed_with is None:
             self.word = cloned_from.word[:]
             self.score = cloned_from.score
@@ -225,6 +247,8 @@ class Individual:
             cut_point = random.randint(1, min_size - 1)
             self.word = cloned_from.word[0:cut_point] + crossed_with.word[cut_point:]
             self.score = None
+        
+        self.kill_status = KillStatus.inherit(cloned_from, crossed_with)
 
     def get_score(self):
         """
@@ -236,16 +260,18 @@ class Individual:
         
         return self.score
     
-    def apply_mutation(self):
+    def apply_mutation(self, force=False):
         """
         Mutate this individual
         """
-        if random.random() < MUTATION_RATE:
+        if force or random.random() < MUTATION_RATE:
             mutation_func = random.choices(LOCAL_MUTATIONS, LOCAL_MUTATIONS_WEIGHTS)[0]
             mutation_func.mutate(self)
             
             self.generation = 0
             self.score = None
+            if self.kill_status == KillStatus.MURDERER:
+                self.kill_status = KillStatus.MURDERER_BLOOD
     
     def to_string(self):
         return "<{0}> ; Score = {1:.4f}".format("".join(self.word), self.get_score())
@@ -283,41 +309,68 @@ class Population:
         self.generation_number = 0
         self.best_score = 0
 
+    def sort_members(self):
+        """
+        Sort the population and returns True if the solution has been found
+        """
+        self.individuals.sort(key=lambda i: i.get_score(), reverse=True)
+        return self.individuals[0].get_score() == 1
+
     def generate_new_members(self):
+        """
+        Generates new members that are chosen randomly to fill the population
+        """
         number_of_iteration = SIZE_OF_POPULATION - len(self.individuals)
         for _ in range(number_of_iteration):
             self.individuals.append(Individual())
 
-        self.sort_members()
+        return self.sort_members()
 
-    def sort_members(self):
-        self.individuals.sort(key=lambda i: i.get_score(), reverse=True)
-        return self.individuals[0].get_score() == 1
-    
-    def generate_next_generation(self, verbose=False):
-        old_population = self.individuals
-
+    def set_dict_of_individuals_as_current_population(self, new_individuals: dict):
         self.individuals = []
-        old_population = old_population[0:ELITISM ]
-        evaluation = [i.get_score() for i in old_population]
-        #evaluation = [min(SIZE_OF_POPULATION, number_of_murderers + SIZE_OF_POPULATION - x) \
-#                            for x in range(len(old_population))]
 
-        # Murderer + best cloning
-        self.individuals = [Individual(ind) for ind in old_population[0:ELITISM]]
+        for _, individual in new_individuals.items():
+            self.individuals.append(individual)
 
-        # Filling with crossover
-        while len(self.individuals) < SIZE_OF_POPULATION:
-            picked_words = random.choices(old_population, weights=evaluation, k=2)
-            self.individuals.append(Individual(picked_words[0], picked_words[1]))
-        
-        # Mutation
-        for individual in self.individuals[ELITISM:]:
-            individual.apply_mutation()
+        return self.sort_members()
+
+    def generate_next_generation(self, verbose=False):
+        self.individuals = self.individuals[0:NATURAL_SELECTION]
+        new_generation = {}
+
+        def new_generation_add(a=None, b=None):
+            ind = Individual(a, b)
+            #ind_key = ind.get_score()
+            ind_key = ind.word_to_str()
+
+            if ind_key not in new_generation:
+                new_generation[ind_key] = ind
+
+        # Keep some elite
+        for i in range(KEPT_ELITS):
+            new_generation_add(self.individuals[i])
+
+        # Degenerate elite (force diversity)
+        for i in range(DEGENERATE_ELITES):
+            degenerativ_elite = Individual(self.individuals[i])
+            
+            for _ in range(int(RANDOM_CHANGE * len(degenerativ_elite.word))):
+                degenerativ_elite.apply_mutation(force=True)
+            
+            new_generation_add(degenerativ_elite)
+
+        # Cross over to fill the rest
+        scores = [SIZE_OF_POPULATION - i for i in range(len(self.individuals))]
+
+        while len(new_generation) < SIZE_OF_POPULATION:
+            word_a, word_b = random.choices(self.individuals, weights=scores, k=2)
+            word = Individual(word_a, word_b)
+            word.apply_mutation()
+            new_generation_add(word)
 
         self.generation_number = self.generation_number + 1
 
-        r = self.sort_members()
+        r = self.set_dict_of_individuals_as_current_population(new_generation)
 
         if verbose:
             new_best_score = self.individuals[0].get_score()
@@ -339,6 +392,9 @@ def find_password():
     population.generate_new_members()
 
     while not population.generate_next_generation(verbose=True):
+        if population.generation_number % 100 == 0:
+            print(", ".join([ind.to_string() for ind in population.individuals[0:10]]))
+
         pass
 
 

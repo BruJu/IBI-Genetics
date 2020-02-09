@@ -168,12 +168,12 @@ def _print_mutations_effects():
 # List of local mutations with their rates. We use two different arrays to match random.choices
 # expected parameters
 MUTATION_LIST = [
-    (MutationAddLetter()         , 3),
-    (MutationRemoveLetter()      , 3),
+    (MutationAddLetter()         , 5),
+    (MutationRemoveLetter()      , 5),
     (MutationChangeLetter()      , 3),
-    (MutationChangeToNearLetter(), 3),
+    (MutationChangeToNearLetter(), 0),
     (MutationSwap(1, 1)          , 5),
-    (MutationSwap(1, 5)          , 5)
+    (MutationSwap(1, 5)          , 0)
 ]
 
 
@@ -215,23 +215,16 @@ class Individual:
             self.word = []
             for _ in range(random_size):
                 self.word.append(random.choice(LETTERS))
-
-            # Note generation number
-            self.generation = 0
+            
             self.score = None
-            self.has_already_killed = False # Some individuals can kill others
         elif crossed_with is None:
             self.word = cloned_from.word[:]
-            self.generation = cloned_from.generation + 1
             self.score = cloned_from.score
-            self.has_already_killed = cloned_from.has_already_killed
         else:
             min_size = min(len(cloned_from.word), len(crossed_with.word))
             cut_point = random.randint(1, min_size - 1)
             self.word = cloned_from.word[0:cut_point] + crossed_with.word[cut_point:]
-            self.generation = 0
             self.score = None
-            self.has_already_killed = False
 
     def get_score(self):
         """
@@ -247,26 +240,19 @@ class Individual:
         """
         Mutate this individual
         """
-        has_changed = False
-
         if random.random() < MUTATION_RATE:
-            has_changed = True
             mutation_func = random.choices(LOCAL_MUTATIONS, LOCAL_MUTATIONS_WEIGHTS)[0]
             mutation_func.mutate(self)
-
-        if has_changed:
+            
             self.generation = 0
             self.score = None
-            self.has_already_killed = False
     
     def to_string(self):
-        return "<{0}> ; Score = {1:.4f} ; Age = {2}".format("".join(self.word), self.get_score(), self.generation)
+        return "<{0}> ; Score = {1:.4f}".format("".join(self.word), self.get_score())
     
     def word_to_str(self):
         return "".join(self.word)
-    
-    def equals_to_str(self, compared_str):
-        return self.word_to_str == compared_str
+
 
 def _print_individual():
     """
@@ -287,7 +273,6 @@ def _print_individual():
     print(ind_a.to_string())
 
 
-
 # =================================================================================================
 # ==== Population manipulation
 
@@ -296,7 +281,6 @@ class Population:
     def __init__(self):
         self.individuals = []
         self.generation_number = 0
-        self.kill_point = 15
         self.best_score = 0
 
     def generate_new_members(self):
@@ -311,47 +295,25 @@ class Population:
         return self.individuals[0].get_score() == 1
     
     def generate_next_generation(self, verbose=False):
-        skip_mutation_step = False
+        old_population = self.individuals
 
-        number_of_murderers = 0
-
-        to_remove = []
-
-        for i, individual in enumerate(self.individuals):
-            if individual.has_already_killed:
-                number_of_murderers = number_of_murderers + 1
-
-            if not individual.has_already_killed and individual.generation == self.kill_point * (i + 1):
-                self.individuals = self.individuals[0:i + 1]
-                self.generate_new_members()
-                individual.has_already_killed = True
-                skip_mutation_step = True
-                print("Killed after {0}".format(i))
-        
-        while to_remove:
-            self.individuals.pop(to_remove.pop(-1))
-
-        if not skip_mutation_step:
-            old_population = self.individuals
-
-            self.individuals = []
-            old_population = old_population[0:ELITISM + number_of_murderers]
-            evaluation = [i.get_score() for i in old_population]
-            #evaluation = [min(SIZE_OF_POPULATION, number_of_murderers + SIZE_OF_POPULATION - x) \
+        self.individuals = []
+        old_population = old_population[0:ELITISM ]
+        evaluation = [i.get_score() for i in old_population]
+        #evaluation = [min(SIZE_OF_POPULATION, number_of_murderers + SIZE_OF_POPULATION - x) \
 #                            for x in range(len(old_population))]
 
-            # Murderer + best cloning
-            self.individuals = [Individual(ind) for ind in old_population[0:number_of_murderers + 1]]
+        # Murderer + best cloning
+        self.individuals = [Individual(ind) for ind in old_population[0:ELITISM]]
 
-            # Filling with crossover
-            while len(self.individuals) < SIZE_OF_POPULATION:
-                picked_words = random.choices(old_population, weights=evaluation, k=2)
-                self.individuals.append(Individual(picked_words[0], picked_words[1]))
-            
-            # Mutation
-            for individual in self.individuals[1 + number_of_murderers:]:
-            #for individual in self.individuals[ELITISM + number_of_murderers:]:
-                individual.apply_mutation()
+        # Filling with crossover
+        while len(self.individuals) < SIZE_OF_POPULATION:
+            picked_words = random.choices(old_population, weights=evaluation, k=2)
+            self.individuals.append(Individual(picked_words[0], picked_words[1]))
+        
+        # Mutation
+        for individual in self.individuals[ELITISM:]:
+            individual.apply_mutation()
 
         self.generation_number = self.generation_number + 1
 

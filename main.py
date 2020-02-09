@@ -161,19 +161,35 @@ def _print_mutations_effects():
 
     for m in mutations:
         print(m)
-        m.mutate(ind, 7)
+        m.mutate(ind)
         print(ind.word)
 
 
 # List of local mutations with their rates. We use two different arrays to match random.choices
 # expected parameters
-LOCAL_MUTATIONS = [
-    MutationAddLetter(), MutationRemoveLetter(),
-    MutationChangeLetter(), MutationChangeToNearLetter(),
-    MutationSwap(1,1), MutationSwap(1,5)
-    ]
+MUTATION_LIST = [
+    (MutationAddLetter()         , 3),
+    (MutationRemoveLetter()      , 3),
+    (MutationChangeLetter()      , 3),
+    (MutationChangeToNearLetter(), 3),
+    (MutationSwap(1, 1)          , 5),
+    (MutationSwap(1, 5)          , 5)
+]
 
-LOCAL_MUTATIONS_WEIGHTS = [ 3, 3, 3, 3, 5, 5 ]
+
+def _unpack_mutation_list(mutation_list):
+    """
+    Unpack the list of tuple of mutation to be suited for random.choices
+    """
+    l1, l2 = [], []
+
+    for mutation in mutation_list:
+        l1.append(mutation[0])
+        l2.append(mutation[1])
+    
+    return l1, l2
+
+LOCAL_MUTATIONS, LOCAL_MUTATIONS_WEIGHTS = _unpack_mutation_list(MUTATION_LIST)
 
 
 # =================================================================================================

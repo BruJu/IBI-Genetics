@@ -22,7 +22,7 @@ SIZE_OF_POPULATION = 100
 # Mutation rate
 MUTATION_RATE = 0.05
 # Elitism (number of best individual kept)
-ELITISM = 10
+ELITISM = 20
 
 # == Degenerate elites : we can select some elites and force a number of letters change to try to
 #                      randomly find the right password
@@ -181,7 +181,7 @@ LOCAL_MUTATIONS = [
     MutationSwap(1,1), MutationSwap(1,5)
     ]
 
-LOCAL_MUTATIONS_WEIGHTS = [ 3, 3, 4, 2, 6, 6 ]
+LOCAL_MUTATIONS_WEIGHTS = [ 3, 3, 3, 0, 0, 0 ]
 
 
 # =================================================================================================
@@ -307,8 +307,7 @@ class Population:
     def __init__(self):
         self.individuals = []
         self.generation_number = 0
-        self.last_generation = []
-        self.kill_point = 20
+        self.kill_point = 5
         self.best_score = 0
 
     def generate_new_members(self):
@@ -325,9 +324,14 @@ class Population:
     def generate_next_generation(self, verbose=False):
         skip_mutation_step = False
 
+        number_of_murderers = 0
+
         to_remove = []
 
         for i, individual in enumerate(self.individuals):
+            if individual.has_already_killed:
+                number_of_murderers = number_of_murderers + 1
+
             if not individual.has_already_killed and individual.generation == self.kill_point:
                 self.individuals = self.individuals[0:i + 1]
                 self.generate_new_members()
@@ -343,11 +347,12 @@ class Population:
             old_population = self.individuals
 
             self.individuals = []
-            # old_population = old_population[0:ELITISM]
-            evaluation = [SIZE_OF_POPULATION - x for x in range(len(old_population))]
+            old_population = old_population[0:ELITISM + number_of_murderers]
+            evaluation = [min(SIZE_OF_POPULATION, number_of_murderers + SIZE_OF_POPULATION - x) \
+                            for x in range(len(old_population))]
 
             # Elite cloning
-            self.individuals = [Individual(ind) for ind in old_population[0:ELITISM]]
+            #self.individuals = [Individual(ind) for ind in old_population[:]]
 
             # Filling with crossover
             while len(self.individuals) < SIZE_OF_POPULATION:
@@ -355,7 +360,8 @@ class Population:
                 self.individuals.append(Individual(picked_words[0], picked_words[1]))
             
             # Mutation
-            for individual in self.individuals[ELITISM:]:
+            for individual in self.individuals[number_of_murderers:]:
+            #for individual in self.individuals[ELITISM + number_of_murderers:]:
                 individual.apply_mutation(local_mutation_rate=MUTATION_RATE, global_mutation_rate=0)
 
         self.generation_number = self.generation_number + 1

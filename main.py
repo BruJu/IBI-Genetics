@@ -29,9 +29,9 @@ SIZE_OF_POPULATION = 100
 MUTATION_RATE = 1
 # Elitism (number of best individual kept)
 NATURAL_SELECTION = 20  # Number of individuals that can be represented in the next generation
-KEPT_ELITS = 10         # Number of individuals that are kept and not crossed
+KEPT_ELITS = 8          # Number of individuals that are kept and not crossed
 # Ensure population diversity
-KILL_POINT = 20         # Age at which an individual will kill every individual worst than himself
+KILL_POINT = 50         # Age at which an individual will kill every individual worst than himself
 
 # == Degenerate elites : we can select some elites and force a lot of changes to try to randomly
 #                        find the right password
@@ -528,37 +528,6 @@ def benchmark(max_number_of_tested_passwords=10, number_of_attempts=20):
         json.dump(total_perfs, f, sort_keys=True, indent= 2)
 
 
-def final_report_analytics():
-    import matplotlib
-    import matplotlib.pyplot as plt
-
-    def fitness_evolution():
-        x = []
-        y = []
-
-        population = Population()
-        population.generate_new_members()
-
-        while not population.generate_next_generation(verbose=False):
-            x.append(population.generation_number)
-            y.append(population.individuals[0].get_score())
-
-        
-        x.append(population.generation_number)
-        y.append(1.0)
-
-        plt.plot(x, y)
-        plt.ylabel('Score')
-        plt.show()
-
-
-
-
-    fitness_evolution()
-
-
-
 if __name__ == '__main__':
-    #benchmark()
-
-    final_report_analytics()
+    find_password()
+ 

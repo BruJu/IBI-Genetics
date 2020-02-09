@@ -20,7 +20,7 @@ MAX_SIZE = 18
 # Size of the population
 SIZE_OF_POPULATION = 100
 # Mutation rate
-MUTATION_RATE = 0.05
+MUTATION_RATE = 1
 # Elitism (number of best individual kept)
 ELITISM = 20
 
@@ -30,11 +30,6 @@ ELITISM = 20
 DEGENERATE_ELITES = 10
 # Proportion of changed letters
 RANDOM_CHANGE = 0.4
-
-# Sometimes we keep the genotypes as a tuple of (WORD, SCORE)
-# We didn't implement it as a dict to get better performances
-WORD = 0
-SCORE = 1
 
 
 def check(password_attempt):
@@ -54,11 +49,10 @@ class ILocalMutation:
     """
     The interface that defines a local mutation
     """
-    def mutate(self, individual, mutation_index):
+    def mutate(self, individual):
         """
         Apply this mutation to the individual
         :param individual: The individual to mutate
-        :param mutation_index: The position of the letter to mutate
         """
         raise NotImplementedError("This class in an interface")
 
@@ -67,45 +61,45 @@ class MutationAddLetter(ILocalMutation):
     """
     A mutation that adds a letter
     """
-    def mutate(self, individual, mutation_index):
+    def mutate(self, individual):
         if len(individual.word) == MAX_SIZE:
-            return mutation_index + 1
+            return
+        
+        mutation_index = random.randint(0, len(individual.word) + 1)
 
-        offset = 0 if random.random() < 0.5 else 1 # Insert before or after the current letter
-        individual.word = individual.word[0:mutation_index+offset] + \
-                        random.choices(LETTERS) + individual.word[mutation_index+offset:]
-
-        return mutation_index + 2
+        if mutation_index == len(individual.word):
+            individual.word.append(random.choices(LETTERS)[0])
+        else:
+            individual.word.insert(mutation_index, random.choices(LETTERS)[0])
 
 
 class MutationRemoveLetter(ILocalMutation):
     """
     A mutation that removes a letter
     """
-    def mutate(self, individual, mutation_index):
+    def mutate(self, individual):
         if len(individual.word) == MIN_SIZE:
-            return mutation_index + 1
-
-        individual.word = individual.word[0:mutation_index] + individual.word[mutation_index + 1:]
-
-        return mutation_index
+            return
+        
+        mutation_index = random.randint(0, len(individual.word) - 1)
+        individual.word.pop(mutation_index)
 
 
 class MutationChangeLetter(ILocalMutation):
     """
     Changes a letter
     """
-    def mutate(self, individual, mutation_index):
-        new_letter = random.choice(LETTERS)
-        individual.word[mutation_index] = new_letter
-        return mutation_index + 1
+    def mutate(self, individual):
+        mutation_index = random.randint(0, len(individual.word) - 1)
+        individual.word[mutation_index] = random.choice(LETTERS)
 
 
 class MutationChangeToNearLetter(ILocalMutation):
     """
     Changes a letter to a near letter in the alphabet
     """
-    def mutate(self, individual, mutation_index):
+    def mutate(self, individual):
+        mutation_index = random.randint(0, len(individual.word) - 1)
         old_letter = individual.word[mutation_index]
                                       # Possible offset values :
         offset = random.randint(0, 6) #  0  1  2  3  4  5 
@@ -115,7 +109,6 @@ class MutationChangeToNearLetter(ILocalMutation):
 
         position_in_letters = (LETTERS.index(old_letter) + offset) % len(LETTERS)
         individual.word[mutation_index] = LETTERS[position_in_letters]
-        return mutation_index + 1
 
 
 class MutationSwap(ILocalMutation):
@@ -131,7 +124,8 @@ class MutationSwap(ILocalMutation):
         self.min_distance = min_distance
         self.max_distance = max_distance
     
-    def mutate(self, individual, mutation_index):
+    def mutate(self, individual):
+        mutation_index = random.randint(0, len(individual.word) - 1)
         sign = -1 if random.random() < 0.5 else 1
         distance = random.randint(self.min_distance - 1, self.max_distance)
         other_letter_pos = mutation_index + distance * sign
@@ -144,8 +138,6 @@ class MutationSwap(ILocalMutation):
             temp = individual.word[mutation_index]
             individual.word[mutation_index] = individual.word[other_letter_pos]
             individual.word[other_letter_pos] = temp
-
-        return mutation_index + 1
 
 
 def _print_mutations_effects():
@@ -181,7 +173,7 @@ LOCAL_MUTATIONS = [
     MutationSwap(1,1), MutationSwap(1,5)
     ]
 
-LOCAL_MUTATIONS_WEIGHTS = [ 3, 3, 3, 0, 0, 0 ]
+LOCAL_MUTATIONS_WEIGHTS = [ 3, 3, 3, 3, 5, 5 ]
 
 
 # =================================================================================================
@@ -235,37 +227,21 @@ class Individual:
         
         return self.score
     
-    def apply_mutation(self, local_mutation_rate=MUTATION_RATE, global_mutation_rate=MUTATION_RATE):
+    def apply_mutation(self):
         """
         Mutate this individual
         """
         has_changed = False
 
-        if random.random() < global_mutation_rate:
+        if random.random() < MUTATION_RATE:
             has_changed = True
-            self.global_mutation_shift()
-        
-        current_letter = 0
-        while current_letter < len(self.word):
-            if random.random() < local_mutation_rate:
-                has_changed = True
-
-                mutation_func = random.choices(LOCAL_MUTATIONS, LOCAL_MUTATIONS_WEIGHTS)[0]
-                current_letter = mutation_func.mutate(self, current_letter)
-            else:
-                current_letter = current_letter + 1
+            mutation_func = random.choices(LOCAL_MUTATIONS, LOCAL_MUTATIONS_WEIGHTS)[0]
+            mutation_func.mutate(self)
 
         if has_changed:
             self.generation = 0
             self.score = None
             self.has_already_killed = False
-    
-    def global_mutation_shift(self):
-        """
-        Shift by one letter to the left the letters of the word
-        """
-        self.word = self.word[1:]
-        self.word.append(self.word[0])
     
     def to_string(self):
         return "<{0}> ; Score = {1:.4f} ; Age = {2}".format("".join(self.word), self.get_score(), self.generation)
@@ -291,11 +267,8 @@ def _print_individual():
     crossed = Individual(ind_a, ind_b)
     print(crossed.to_string())
 
-    ind_a.apply_mutation(local_mutation_rate=0.2, global_mutation_rate=0)
+    ind_a.apply_mutation()
     print(ind_a.to_string())
-
-    ind_b.apply_mutation(local_mutation_rate=0, global_mutation_rate=1)
-    print(ind_b.to_string())
 
 
 
@@ -307,7 +280,7 @@ class Population:
     def __init__(self):
         self.individuals = []
         self.generation_number = 0
-        self.kill_point = 5
+        self.kill_point = 15
         self.best_score = 0
 
     def generate_new_members(self):
@@ -332,13 +305,12 @@ class Population:
             if individual.has_already_killed:
                 number_of_murderers = number_of_murderers + 1
 
-            if not individual.has_already_killed and individual.generation == self.kill_point:
+            if not individual.has_already_killed and individual.generation == self.kill_point * (i + 1):
                 self.individuals = self.individuals[0:i + 1]
                 self.generate_new_members()
                 individual.has_already_killed = True
                 skip_mutation_step = True
-            elif i != 0 and individual.generation >= self.kill_point * (ELITISM - i) + 1:
-                to_remove.append(i)
+                print("Killed after {0}".format(i))
         
         while to_remove:
             self.individuals.pop(to_remove.pop(-1))
@@ -348,11 +320,12 @@ class Population:
 
             self.individuals = []
             old_population = old_population[0:ELITISM + number_of_murderers]
-            evaluation = [min(SIZE_OF_POPULATION, number_of_murderers + SIZE_OF_POPULATION - x) \
-                            for x in range(len(old_population))]
+            evaluation = [i.get_score() for i in old_population]
+            #evaluation = [min(SIZE_OF_POPULATION, number_of_murderers + SIZE_OF_POPULATION - x) \
+#                            for x in range(len(old_population))]
 
-            # Elite cloning
-            #self.individuals = [Individual(ind) for ind in old_population[:]]
+            # Murderer + best cloning
+            self.individuals = [Individual(ind) for ind in old_population[0:number_of_murderers + 1]]
 
             # Filling with crossover
             while len(self.individuals) < SIZE_OF_POPULATION:
@@ -360,9 +333,9 @@ class Population:
                 self.individuals.append(Individual(picked_words[0], picked_words[1]))
             
             # Mutation
-            for individual in self.individuals[number_of_murderers:]:
+            for individual in self.individuals[1 + number_of_murderers:]:
             #for individual in self.individuals[ELITISM + number_of_murderers:]:
-                individual.apply_mutation(local_mutation_rate=MUTATION_RATE, global_mutation_rate=0)
+                individual.apply_mutation()
 
         self.generation_number = self.generation_number + 1
 

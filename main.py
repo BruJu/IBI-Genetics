@@ -230,6 +230,8 @@ class Individual:
         generated if cloned_from is also None), else
         it will be a cross over of the cloned_from and crossed_with
         """
+        self.kill_status = KillStatus.inherit(cloned_from, crossed_with)
+
         if cloned_from is None:
             # Generate word
             random_size = random.randint(MIN_SIZE, MAX_SIZE)
@@ -238,17 +240,18 @@ class Individual:
                 self.word.append(random.choice(LETTERS))
             
             self.score = None
-            self.has_killed = False
+            self.age = 0
         elif crossed_with is None:
             self.word = cloned_from.word[:]
             self.score = cloned_from.score
+            self.age = cloned_from.age
+            self.kill_status = cloned_from.kill_status
         else:
             min_size = min(len(cloned_from.word), len(crossed_with.word))
             cut_point = random.randint(1, min_size - 1)
             self.word = cloned_from.word[0:cut_point] + crossed_with.word[cut_point:]
             self.score = None
-        
-        self.kill_status = KillStatus.inherit(cloned_from, crossed_with)
+            self.age = 0
 
     def get_score(self):
         """
@@ -308,6 +311,8 @@ class Population:
         self.individuals = []
         self.generation_number = 0
         self.best_score = 0
+        self.kill_point = 50
+        self.number_of_murders = 0
 
     def sort_members(self):
         """
@@ -334,43 +339,87 @@ class Population:
 
         return self.sort_members()
 
+    def purge_murderer_blood(self):
+        """
+        Removes from the population every individual than is borned from a murderer and that is
+        worst than every murderer. The individual borned from a murderer and that are better than
+        at least one murderer are marked as innocent.
+        """
+        last_muderer_id = -1
+
+        for i, individual in enumerate(self.individuals):
+            if individual.kill_status == KillStatus.MURDERER:
+                last_muderer_id = i
+        
+        i = 0
+        while i != len(self.individuals):
+            if i < last_muderer_id:
+                if self.individuals[i].kill_status == KillStatus.MURDERER_BLOOD:
+                    self.individuals[i].kill_status = KillStatus.INNOCENT
+                
+                i = i + 1
+            elif i > last_muderer_id:
+                if self.individuals[i].kill_status == KillStatus.MURDERER_BLOOD:
+                    self.individuals.pop(i)
+                else:
+                    i = i + 1
+            else:
+                i = i + 1
+
     def generate_next_generation(self, verbose=False):
+        self.purge_murderer_blood()
         self.individuals = self.individuals[0:NATURAL_SELECTION]
-        new_generation = {}
+        sacrificial_generation = False
 
-        def new_generation_add(a=None, b=None):
-            ind = Individual(a, b)
-            #ind_key = ind.get_score()
-            ind_key = ind.word_to_str()
+        for i, individual in enumerate(self.individuals):
+            if individual.age == self.kill_point:
+                self.individuals = self.individuals[0:i+1]
+                self.individuals[-1].kill_status = KillStatus.MURDERER
+                sacrificial_generation = True
+                self.number_of_murders += 1
+                break
 
-            if ind_key not in new_generation:
-                new_generation[ind_key] = ind
+        if not sacrificial_generation:
+            new_generation = {}
 
-        # Keep some elite
-        for i in range(KEPT_ELITS):
-            new_generation_add(self.individuals[i])
+            def new_generation_add(a=None, b=None):
+                ind = Individual(a, b)
+                #ind_key = ind.get_score()
+                ind_key = ind.word_to_str()
 
-        # Degenerate elite (force diversity)
-        for i in range(DEGENERATE_ELITES):
-            degenerativ_elite = Individual(self.individuals[i])
-            
-            for _ in range(int(RANDOM_CHANGE * len(degenerativ_elite.word))):
-                degenerativ_elite.apply_mutation(force=True)
-            
-            new_generation_add(degenerativ_elite)
+                if ind_key not in new_generation or new_generation[ind_key].kill_status > ind.kill_status:
+                    new_generation[ind_key] = ind
 
-        # Cross over to fill the rest
-        scores = [SIZE_OF_POPULATION - i for i in range(len(self.individuals))]
+            # Keep some elite
+            for i in range(KEPT_ELITS):
+                new_generation_add(self.individuals[i])
 
-        while len(new_generation) < SIZE_OF_POPULATION:
-            word_a, word_b = random.choices(self.individuals, weights=scores, k=2)
-            word = Individual(word_a, word_b)
-            word.apply_mutation()
-            new_generation_add(word)
+            # Degenerate elite (force diversity)
+            for i in range(DEGENERATE_ELITES):
+                degenerativ_elite = Individual(self.individuals[i])
+                
+                for _ in range(int(RANDOM_CHANGE * len(degenerativ_elite.word))):
+                    degenerativ_elite.apply_mutation(force=True)
+                
+                new_generation_add(degenerativ_elite)
 
-        self.generation_number = self.generation_number + 1
+            # Cross over to fill the rest
+            scores = [SIZE_OF_POPULATION - i for i in range(len(self.individuals))]
 
-        r = self.set_dict_of_individuals_as_current_population(new_generation)
+            while len(new_generation) < SIZE_OF_POPULATION:
+                word_a, word_b = random.choices(self.individuals, weights=scores, k=2)
+                word = Individual(word_a, word_b)
+                word.apply_mutation()
+                new_generation_add(word)
+
+            self.generation_number = self.generation_number + 1
+            r = self.set_dict_of_individuals_as_current_population(new_generation)
+        else:
+            self.generate_new_members()
+            r = False
+        
+        for individual in self.individuals:
+            individual.age += 1
 
         if verbose:
             new_best_score = self.individuals[0].get_score()
@@ -391,11 +440,14 @@ def find_password():
     population = Population()
     population.generate_new_members()
 
-    while not population.generate_next_generation(verbose=True):
-        if population.generation_number % 100 == 0:
-            print(", ".join([ind.to_string() for ind in population.individuals[0:10]]))
+    while not population.generate_next_generation(verbose=False):
+        #if population.generation_number % 100 == 0:
+        #    print(", ".join([ind.to_string() for ind in population.individuals[0:10]]))
 
         pass
+    
+    return population.individuals[0].word_to_str(), population.generation_number, population.number_of_murders
 
 
-find_password()
+print(find_password())
+
